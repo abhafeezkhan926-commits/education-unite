@@ -6,7 +6,12 @@ import { digest } from './student-security';
 
 async function createDatabase() {
   if (process.env.DATABASE_URL) {
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 3 });
+    const ca = process.env.DATABASE_CA_CERT;
+    const pool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 3,
+      ...(ca && { ssl: { ca, rejectUnauthorized: true } }),
+    });
     return async (work) => {
       const client = await pool.connect();
       try {
