@@ -1,0 +1,410 @@
+[
+  {
+    "id": "gaming-01",
+    "interest": "gaming",
+    "rule": "multiply",
+    "unit": "points",
+    "prompt": "There are {a} tournament rounds with {b} points each. How many points are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} points.",
+      "{a} × {b} = {answer} points."
+    ],
+    "use": "Compare total scores across tournament rounds."
+  },
+  {
+    "id": "gaming-02",
+    "interest": "gaming",
+    "rule": "remaining",
+    "unit": "points",
+    "prompt": "There are {a} tournament rounds with {b} points each. After {c} points are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} points to begin with.",
+      "{total} − {c} = {answer} points remaining."
+    ],
+    "use": "Compare total scores across tournament rounds."
+  },
+  {
+    "id": "gaming-03",
+    "interest": "gaming",
+    "rule": "percentage",
+    "unit": "points",
+    "prompt": "There are {a} tournament rounds with {b} points each. You have used {c}% of the total. How many points have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} points in total.",
+      "{total} × {c} ÷ 100 = {answer} points used."
+    ],
+    "use": "Compare total scores across tournament rounds."
+  },
+  {
+    "id": "sport-01",
+    "interest": "sport",
+    "rule": "multiply",
+    "unit": "minutes",
+    "prompt": "There are {a} training sessions with {b} minutes each. How many minutes are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} minutes.",
+      "{a} × {b} = {answer} minutes."
+    ],
+    "use": "Work out the time a team spends training."
+  },
+  {
+    "id": "sport-02",
+    "interest": "sport",
+    "rule": "remaining",
+    "unit": "minutes",
+    "prompt": "There are {a} training sessions with {b} minutes each. After {c} minutes are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} minutes to begin with.",
+      "{total} − {c} = {answer} minutes remaining."
+    ],
+    "use": "Work out the time a team spends training."
+  },
+  {
+    "id": "sport-03",
+    "interest": "sport",
+    "rule": "percentage",
+    "unit": "minutes",
+    "prompt": "There are {a} training sessions with {b} minutes each. You have used {c}% of the total. How many minutes have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} minutes in total.",
+      "{total} × {c} ÷ 100 = {answer} minutes used."
+    ],
+    "use": "Work out the time a team spends training."
+  },
+  {
+    "id": "music-01",
+    "interest": "music",
+    "rule": "multiply",
+    "unit": "minutes",
+    "prompt": "There are {a} rehearsal blocks with {b} minutes each. How many minutes are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} minutes.",
+      "{a} × {b} = {answer} minutes."
+    ],
+    "use": "Plan how much rehearsal time is available."
+  },
+  {
+    "id": "music-02",
+    "interest": "music",
+    "rule": "remaining",
+    "unit": "minutes",
+    "prompt": "There are {a} rehearsal blocks with {b} minutes each. After {c} minutes are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} minutes to begin with.",
+      "{total} − {c} = {answer} minutes remaining."
+    ],
+    "use": "Plan how much rehearsal time is available."
+  },
+  {
+    "id": "music-03",
+    "interest": "music",
+    "rule": "percentage",
+    "unit": "minutes",
+    "prompt": "There are {a} rehearsal blocks with {b} minutes each. You have used {c}% of the total. How many minutes have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} minutes in total.",
+      "{total} × {c} ÷ 100 = {answer} minutes used."
+    ],
+    "use": "Plan how much rehearsal time is available."
+  },
+  {
+    "id": "fashion-01",
+    "interest": "fashion",
+    "rule": "multiply",
+    "unit": "fabric swatches",
+    "prompt": "There are {a} sample packs with {b} fabric swatches each. How many fabric swatches are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} fabric swatches.",
+      "{a} × {b} = {answer} fabric swatches."
+    ],
+    "use": "Track how many swatches you have for a collection."
+  },
+  {
+    "id": "fashion-02",
+    "interest": "fashion",
+    "rule": "remaining",
+    "unit": "fabric swatches",
+    "prompt": "There are {a} sample packs with {b} fabric swatches each. After {c} fabric swatches are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} fabric swatches to begin with.",
+      "{total} − {c} = {answer} fabric swatches remaining."
+    ],
+    "use": "Track how many swatches you have for a collection."
+  },
+  {
+    "id": "fashion-03",
+    "interest": "fashion",
+    "rule": "percentage",
+    "unit": "fabric swatches",
+    "prompt": "There are {a} sample packs with {b} fabric swatches each. You have used {c}% of the total. How many fabric swatches have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} fabric swatches in total.",
+      "{total} × {c} ÷ 100 = {answer} fabric swatches used."
+    ],
+    "use": "Track how many swatches you have for a collection."
+  },
+  {
+    "id": "technology-01",
+    "interest": "technology",
+    "rule": "multiply",
+    "unit": "megabytes",
+    "prompt": "There are {a} download batches with {b} megabytes each. How many megabytes are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} megabytes.",
+      "{a} × {b} = {answer} megabytes."
+    ],
+    "use": "Budget storage for a series of downloads."
+  },
+  {
+    "id": "technology-02",
+    "interest": "technology",
+    "rule": "remaining",
+    "unit": "megabytes",
+    "prompt": "There are {a} download batches with {b} megabytes each. After {c} megabytes are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} megabytes to begin with.",
+      "{total} − {c} = {answer} megabytes remaining."
+    ],
+    "use": "Budget storage for a series of downloads."
+  },
+  {
+    "id": "technology-03",
+    "interest": "technology",
+    "rule": "percentage",
+    "unit": "megabytes",
+    "prompt": "There are {a} download batches with {b} megabytes each. You have used {c}% of the total. How many megabytes have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} megabytes in total.",
+      "{total} × {c} ÷ 100 = {answer} megabytes used."
+    ],
+    "use": "Budget storage for a series of downloads."
+  },
+  {
+    "id": "shopping-01",
+    "interest": "shopping",
+    "rule": "multiply",
+    "unit": "items",
+    "prompt": "There are {a} delivery boxes with {b} items each. How many items are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} items.",
+      "{a} × {b} = {answer} items."
+    ],
+    "use": "Check stock across a bulk delivery."
+  },
+  {
+    "id": "shopping-02",
+    "interest": "shopping",
+    "rule": "remaining",
+    "unit": "items",
+    "prompt": "There are {a} delivery boxes with {b} items each. After {c} items are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} items to begin with.",
+      "{total} − {c} = {answer} items remaining."
+    ],
+    "use": "Check stock across a bulk delivery."
+  },
+  {
+    "id": "shopping-03",
+    "interest": "shopping",
+    "rule": "percentage",
+    "unit": "items",
+    "prompt": "There are {a} delivery boxes with {b} items each. You have used {c}% of the total. How many items have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} items in total.",
+      "{total} × {c} ÷ 100 = {answer} items used."
+    ],
+    "use": "Check stock across a bulk delivery."
+  },
+  {
+    "id": "pop-culture-01",
+    "interest": "pop-culture",
+    "rule": "multiply",
+    "unit": "stickers",
+    "prompt": "There are {a} collector packs with {b} stickers each. How many stickers are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} stickers.",
+      "{a} × {b} = {answer} stickers."
+    ],
+    "use": "Track the size of a sticker collection."
+  },
+  {
+    "id": "pop-culture-02",
+    "interest": "pop-culture",
+    "rule": "remaining",
+    "unit": "stickers",
+    "prompt": "There are {a} collector packs with {b} stickers each. After {c} stickers are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} stickers to begin with.",
+      "{total} − {c} = {answer} stickers remaining."
+    ],
+    "use": "Track the size of a sticker collection."
+  },
+  {
+    "id": "pop-culture-03",
+    "interest": "pop-culture",
+    "rule": "percentage",
+    "unit": "stickers",
+    "prompt": "There are {a} collector packs with {b} stickers each. You have used {c}% of the total. How many stickers have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} stickers in total.",
+      "{total} × {c} ÷ 100 = {answer} stickers used."
+    ],
+    "use": "Track the size of a sticker collection."
+  },
+  {
+    "id": "beauty-01",
+    "interest": "beauty",
+    "rule": "multiply",
+    "unit": "millilitres",
+    "prompt": "There are {a} product bottles with {b} millilitres each. How many millilitres are there altogether?",
+    "hints": [
+      "Identify the number of groups and the amount in each group.",
+      "Each of the {a} groups contributes the same amount.",
+      "Multiply {a} by {b}."
+    ],
+    "solution": [
+      "There are {a} equal groups of {b} millilitres.",
+      "{a} × {b} = {answer} millilitres."
+    ],
+    "use": "Work out how much product is available for a demonstration."
+  },
+  {
+    "id": "beauty-02",
+    "interest": "beauty",
+    "rule": "remaining",
+    "unit": "millilitres",
+    "prompt": "There are {a} product bottles with {b} millilitres each. After {c} millilitres are used, how many are left?",
+    "hints": [
+      "Find the starting total before subtracting.",
+      "Multiply {a} by {b} to get the starting total.",
+      "Take {c} away from the starting total."
+    ],
+    "solution": [
+      "{a} × {b} = {total} millilitres to begin with.",
+      "{total} − {c} = {answer} millilitres remaining."
+    ],
+    "use": "Work out how much product is available for a demonstration."
+  },
+  {
+    "id": "beauty-03",
+    "interest": "beauty",
+    "rule": "percentage",
+    "unit": "millilitres",
+    "prompt": "There are {a} product bottles with {b} millilitres each. You have used {c}% of the total. How many millilitres have you used?",
+    "hints": [
+      "Find the total amount before applying the percentage.",
+      "Multiply {a} by {b} to find the total.",
+      "Multiply the total by {c} and divide by 100."
+    ],
+    "solution": [
+      "{a} × {b} = {total} millilitres in total.",
+      "{total} × {c} ÷ 100 = {answer} millilitres used."
+    ],
+    "use": "Work out how much product is available for a demonstration."
+  }
+]

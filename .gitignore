@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.npm-cache/
+.vercel/
+debug.log
+.env*
+!.env.example
+supabase/.temp/
+supabase/.branches/
+/docs/Freelancer brief EducationUnite MVP.pdf
+/docs/PROJECT-STATUS.md
