@@ -111,6 +111,8 @@ a, .text-button {
   border: 1px solid #ffffff30;
   border-radius: 1.25rem;
   background: #141628;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .student-card h1 {
@@ -138,6 +140,7 @@ input, select, button, .student-button {
 
 input, select {
   width: 100%;
+  min-width: 0;
   border: 1px solid #9d97b7;
   background: #10131e;
   color: var(--theme-text);
@@ -152,6 +155,40 @@ button, .student-button {
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+}
+
+.password-field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.password-field-control {
+  position: relative;
+  display: grid;
+}
+
+.password-field-control input {
+  padding-inline-end: 3rem;
+}
+
+.password-field-control input::-ms-reveal {
+  display: none;
+}
+
+.password-field-control button {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 2.75rem;
+  padding: 0;
+  background: transparent;
+  color: var(--theme-text);
+}
+
+.password-field-control button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
 }
 
 button:disabled {
@@ -263,9 +300,101 @@ button:disabled {
   font-weight: 700;
 }
 
+@media (max-width: 420px) {
+  .student-card {
+    width: calc(100% - 1rem);
+    padding: 1rem;
+  }
+
+  .practice-links > .student-button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+
 .practice-links {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+}
+
+.practice-typing {
+  position: relative;
+}
+
+.practice-typing-full {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.practice-typing-unrevealed {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-typing-unrevealed { visibility: visible; }
+}
+
+.student-backdrop {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.student-backdrop + .student-card {
+  position: relative;
+  z-index: 1;
+}
+
+.student-numbers span {
+  position: absolute;
+  bottom: -3rem;
+  color: #cee9ff;
+  font-size: clamp(0.9rem, 2vw, 1.5rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  opacity: 0.2;
+  animation-name: student-number-float;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes student-number-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-100vh - 5rem)); }
+}
+
+.student-firework {
+  position: absolute;
+}
+
+.student-firework i {
+  position: absolute;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--spark);
+  box-shadow: 0 0 0.4rem var(--spark);
+  opacity: 0;
+  animation: student-firework-burst 950ms ease-out var(--burst-delay) both;
+}
+
+@keyframes student-firework-burst {
+  0% { transform: rotate(var(--angle)) translateX(0) scale(0.6); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: rotate(var(--angle)) translateX(var(--distance)) scale(0.25); opacity: 0; }
+}
+
+@media (max-width: 480px) {
+  .student-numbers span:nth-child(even) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-backdrop { display: none; }
 }

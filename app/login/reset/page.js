@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { resetPassword } from '../../student-actions';
 import StudentForm from '../../student-forms';
+import PasswordField from '../../password-field';
 
 export default function ResetPassword() {
   return (
@@ -12,12 +13,8 @@ export default function ResetPassword() {
         <label>Username
           <input name="username" required maxLength={64} autoComplete="username" autoCapitalize="none" spellCheck={false} />
         </label>
-        <label>One-time password
-          <input name="temporary" type="password" required maxLength={22} autoComplete="one-time-code" />
-        </label>
-        <label>New password
-          <input name="password" type="password" required minLength={12} maxLength={128} autoComplete="new-password" />
-        </label>
+        <PasswordField label="One-time password" name="temporary" required maxLength={22} autoComplete="one-time-code" />
+        <PasswordField label="New password" name="password" required minLength={12} maxLength={128} autoComplete="new-password" />
       </StudentForm>
     </main>
   );

@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import PracticeCards from './practice-cards';
+import './welcome.css';
 
 export default function Home() {
   return (
@@ -16,8 +18,14 @@ export default function Home() {
           </nav>
         </div>
       </header>
-      <main>
-        <h1>GCSE maths practice built around your interests.</h1>
+      <main className="welcome-main">
+        <section className="welcome-intro">
+          <h1>Personal GCSE maths practice</h1>
+          <p>Practise with questions based on the things you enjoy.</p>
+          <Link className="student-button" href="/join">Join with a code</Link>
+          <a className="welcome-scroll-link" href="#how-it-works">See how it works ↓</a>
+        </section>
+        <PracticeCards />
       </main>
     </div>
   );

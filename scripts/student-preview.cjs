@@ -1,10 +1,12 @@
 const { spawn } = require('node:child_process');
 const { randomBytes } = require('node:crypto');
+const { existsSync } = require('node:fs');
 const previewTotp = require('../app/preview-totp.cjs');
 
 if (process.argv[2] === '--admin-code') {
   console.log(previewTotp());
 } else {
+  if (existsSync('.env.local')) process.loadEnvFile('.env.local');
   const password = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD ?? randomBytes(18).toString('base64url');
   if (!process.env.DATABASE_URL && !process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD) {
     console.log('Local admin password for owner@example.test: ' + password);

@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { adminSignIn } from '../../admin-actions';
+import { requiresAdminCode } from '../../admin-auth';
 import StudentForm from '../../student-forms';
+import PasswordField from '../../password-field';
 
-export default function AdminLogin() {
+export default async function AdminLogin() {
+  await connection();
   return (
     <main className="student-card">
       <Link href="/">EducationUnite</Link>
@@ -11,12 +15,10 @@ export default function AdminLogin() {
         <label>Email
           <input name="email" type="email" required maxLength={254} autoComplete="username" />
         </label>
-        <label>Password
-          <input name="password" type="password" required maxLength={128} autoComplete="current-password" />
-        </label>
-        <label>Authenticator code
+        <PasswordField label="Password" name="password" required maxLength={128} autoComplete="current-password" />
+        {requiresAdminCode() && <label>Authenticator code
           <input name="code" required pattern="[0-9]{6}" maxLength={6} inputMode="numeric" autoComplete="one-time-code" />
-        </label>
+        </label>}
       </StudentForm>
     </main>
   );

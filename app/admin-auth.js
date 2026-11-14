@@ -3,11 +3,12 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { adminTransaction } from './student-db';
 import { cookieOptions, sessionDigest } from './student-security';
-import previewTotp from './preview-totp.cjs';
 
 const cookieName = 'eu_admin';
 const sessionAge = 15 * 60;
-const preview = process.env.EDUCATION_UNITE_PREVIEW === '1' && !process.env.DATABASE_URL;
+export function requiresAdminCode() {
+  return process.env.EDUCATION_UNITE_PREVIEW !== '1' || Boolean(process.env.DATABASE_URL);
+}
 const verifiedTotp = (factor) => factor.factor_type === 'totp' && factor.status === 'verified';
 
 async function authRequest(path, { token, body } = {}) {
@@ -33,15 +34,16 @@ async function authRequest(path, { token, body } = {}) {
   }
 }
 
-function verifyPreviewOwner(email, password, code) {
+function verifyPreviewOwner(email, password) {
   const expected = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD;
-  if (email !== 'owner@example.test' || !expected || expected.length !== password.length ||
-      !timingSafeEqual(Buffer.from(expected, 'utf16le'), Buffer.from(password, 'utf16le'))) return false;
-  return timingSafeEqual(Buffer.from(previewTotp()), Buffer.from(code));
+  return email === 'owner@example.test' && Boolean(expected) && expected.length === password.length &&
+    timingSafeEqual(Buffer.from(expected, 'utf16le'), Buffer.from(password, 'utf16le'));
 }
 
 export async function verifyOwner(email, password, code) {
-  if (preview) return verifyPreviewOwner(email, password, code);
+  if (!requiresAdminCode()) return verifyPreviewOwner(email, password);
+
+  if (!/^\d{6}$/.test(code)) return false;
   const owner = process.env.EDUCATION_UNITE_OWNER_ID;
   if (!owner) return false;
   const login = await authRequest('token?grant_type=password', { body: { email, password } });

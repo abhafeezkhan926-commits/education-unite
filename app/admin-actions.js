@@ -3,7 +3,7 @@
 import { randomBytes } from 'node:crypto';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { endAdminSession, startAdminSession, verifyOwner, withAdmin } from './admin-auth';
+import { endAdminSession, requiresAdminCode, startAdminSession, verifyOwner, withAdmin } from './admin-auth';
 import { studentTransaction } from './student-db';
 import { consumeAttempt, digest, requestSource } from './student-security';
 
@@ -16,11 +16,13 @@ export async function adminSignIn(_previous, form) {
     return { error: 'Too many attempts. Try again in 15 minutes.' };
   }
   if (!email || email.length > 254 || !password || password.length > 128 ||
-      !/^\d{6}$/.test(code) || !await verifyOwner(email, password, code)) {
-    return { error: 'Check your email, password and authenticator code.' };
+      !await verifyOwner(email, password, code)) {
+    return { error: requiresAdminCode()
+      ? 'Check your email, password and authenticator code.'
+      : 'Check your email and password.' };
   }
   await startAdminSession();
-  redirect('/admin/codes');
+  redirect('/admin');
 }
 
 export async function adminSignOut() {

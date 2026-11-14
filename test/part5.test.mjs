@@ -151,11 +151,10 @@ test('production preview supports owner, signup, practice, expiry and password r
   assert.match(headers.get('content-security-policy'), /frame-ancestors 'none'/);
   assert.equal(headers.get('x-powered-by'), null);
   assert.match((await first.get('/admin/codes')).html, /Owner sign in/);
-  const credentials = { email: 'owner@example.test', password, code: require('../app/preview-totp.cjs')() };
-  const wrongCode = credentials.code === '000000' ? '111111' : '000000';
-  assert.match(await admin.submit('/admin/login', 'Sign in', { ...credentials, code: wrongCode }), /Check your email/);
-  credentials.code = require('../app/preview-totp.cjs')();
-  assert.match(await admin.submit('/admin/login', 'Sign in', credentials), /Create a class code/);
+  assert.doesNotMatch((await admin.get('/admin/login')).html, /name="code"/);
+  const credentials = { email: 'owner@example.test', password };
+  assert.match(await admin.submit('/admin/login', 'Sign in', { ...credentials, password: 'wrong-password' }), /Check your email and password/);
+  assert.match(await admin.submit('/admin/login', 'Sign in', credentials), /Admin dashboard/);
   const codePage = await admin.submit('/admin/codes', 'Create class code');
   const code = codePage.match(/<code>(EU-[A-F0-9]+)<\/code>/)?.[1];
   assert.ok(code, 'Expected a generated class code');

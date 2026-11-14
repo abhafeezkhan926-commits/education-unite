@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { checkJoinCode, createStudent, restartJoin } from '../student-actions';
 import StudentForm from '../student-forms';
+import PasswordField from '../password-field';
 import { joinName, readJoinTicket, usernameOptions } from '../student-security';
 
 export default async function Join() {
@@ -19,9 +20,7 @@ export default async function Join() {
                 {usernameOptions(ticket.nonce).map((name) => <option key={name}>{name}</option>)}
               </select>
             </label>
-            <label>Create a password
-              <input name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} aria-describedby="password-help" />
-            </label>
+            <PasswordField label="Create a password" name="password" autoComplete="new-password" required minLength={12} maxLength={128} aria-describedby="password-help" />
             <small id="password-help">Use at least 12 characters.</small>
           </StudentForm>
           <form action={restartJoin}><button className="text-button">Use a different code</button></form>
