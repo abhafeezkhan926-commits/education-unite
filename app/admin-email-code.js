@@ -13,7 +13,9 @@ export function usesLocalAdminTestCode() {
 }
 
 function codeDigest(token, code) {
-  return digest('admin-email-code', [process.env.EDUCATION_UNITE_OWNER_ID, token, code].join(':'));
+  return digest('admin-email-code', [
+    process.env.EDUCATION_UNITE_OWNER_ID, process.env.EDUCATION_UNITE_ADDITIONAL_ADMIN_IDS, token, code,
+  ].join(':'));
 }
 
 export async function pendingAdminEmailToken() {
@@ -58,6 +60,11 @@ export async function sendAdminEmailCode(email) {
       to: [email],
       subject: 'EducationUnite admin sign-in code',
       text: `Your admin sign-in code is ${code}. It expires in 5 minutes. If you did not request this, ignore this email.`,
+      html: `<h1 style="font:700 22px Arial,sans-serif;color:#152540">EducationUnite sign-in</h1>
+        <p>Your admin verification code is</p>
+        <p style="display:inline-block;background:#eef3fb;color:#152540;padding:14px 20px;font:700 36px monospace;letter-spacing:4px">${code}</p>
+        <p>Select and copy the six digits, then paste them into the sign-in page. The code expires in 5 minutes.</p>
+        <p>If you did not request this code, you can ignore this email.</p>`,
     }),
     redirect: 'error',
     signal: AbortSignal.timeout(8000),

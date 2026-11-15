@@ -44,26 +44,35 @@ async function authRequest(path, { token, body } = {}) {
 
 function verifyPreviewOwner(email, password) {
   const expected = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD;
-  return email.toLowerCase() === previewAdminEmail().toLowerCase() && Boolean(expected) && expected.length === password.length &&
+  const configured = previewAdminEmails().find((address) => address.toLowerCase() === email.toLowerCase());
+  return configured && Boolean(expected) && expected.length === password.length &&
     timingSafeEqual(Buffer.from(expected, 'utf16le'), Buffer.from(password, 'utf16le'));
 }
 
-function previewAdminEmail() {
-  return process.env.EDUCATION_UNITE_PREVIEW_ADMIN_EMAIL?.trim() || 'owner@example.test';
+function previewAdminEmails() {
+  return [
+    process.env.EDUCATION_UNITE_PREVIEW_ADMIN_EMAIL?.trim() || 'owner@example.test',
+    process.env.EDUCATION_UNITE_PREVIEW_SECOND_ADMIN_EMAIL?.trim(),
+  ].filter(Boolean);
 }
 
 async function authenticateOwner(email, password) {
-  const owner = process.env.EDUCATION_UNITE_OWNER_ID;
-  if (!owner) return null;
+  const adminIds = [
+    process.env.EDUCATION_UNITE_OWNER_ID,
+    ...((usesAdminEmailCode() && process.env.EDUCATION_UNITE_ADDITIONAL_ADMIN_IDS) || '').split(',').map((id) => id.trim()),
+  ].filter(Boolean);
+  if (!adminIds.length) return null;
   const login = await authRequest('token?grant_type=password', { body: { email, password } });
-  if (!login?.access_token || login.user?.id !== owner) return null;
+  if (!login?.access_token || !adminIds.includes(login.user?.id)) return null;
   const account = await authRequest('user', { token: login.access_token });
-  return account?.id === owner ? { account, token: login.access_token } : null;
+  return account?.id === login.user.id ? { account, token: login.access_token } : null;
 }
 
 export async function verifiedOwnerEmail(email, password) {
   if (!usesHostedAuth()) {
-    return verifyPreviewOwner(email, password) ? previewAdminEmail() : null;
+    return verifyPreviewOwner(email, password)
+      ? previewAdminEmails().find((address) => address.toLowerCase() === email.toLowerCase())
+      : null;
   }
   const identity = await authenticateOwner(email, password);
   return identity?.account.email_confirmed_at ? identity.account.email : null;
