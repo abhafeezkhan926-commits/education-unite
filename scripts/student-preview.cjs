@@ -9,7 +9,8 @@ if (process.argv[2] === '--admin-code') {
   if (existsSync('.env.local')) process.loadEnvFile('.env.local');
   const password = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD ?? randomBytes(18).toString('base64url');
   if (!process.env.DATABASE_URL && !process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD) {
-    console.log('Local admin password for owner@example.test: ' + password);
+    const email = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_EMAIL?.trim() || 'owner@example.test';
+    console.log('Local admin password for ' + email + ': ' + password);
   }
   const child = spawn(process.execPath, [
     require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', ...process.argv.slice(2),

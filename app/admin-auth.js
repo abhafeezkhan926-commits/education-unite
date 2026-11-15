@@ -11,7 +11,11 @@ function usesHostedAuth() {
 }
 
 export function requiresAdminCode() {
-  return usesHostedAuth() && process.env.EDUCATION_UNITE_TEST_PASSWORD_ONLY !== '1';
+  return usesHostedAuth() && !usesAdminEmailCode() && process.env.EDUCATION_UNITE_TEST_PASSWORD_ONLY !== '1';
+}
+
+export function usesAdminEmailCode() {
+  return process.env.EDUCATION_UNITE_ADMIN_EMAIL_CODE === '1';
 }
 const verifiedTotp = (factor) => factor.factor_type === 'totp' && factor.status === 'verified';
 
@@ -40,36 +44,54 @@ async function authRequest(path, { token, body } = {}) {
 
 function verifyPreviewOwner(email, password) {
   const expected = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD;
-  return email === 'owner@example.test' && Boolean(expected) && expected.length === password.length &&
+  return email.toLowerCase() === previewAdminEmail().toLowerCase() && Boolean(expected) && expected.length === password.length &&
     timingSafeEqual(Buffer.from(expected, 'utf16le'), Buffer.from(password, 'utf16le'));
+}
+
+function previewAdminEmail() {
+  return process.env.EDUCATION_UNITE_PREVIEW_ADMIN_EMAIL?.trim() || 'owner@example.test';
+}
+
+async function authenticateOwner(email, password) {
+  const owner = process.env.EDUCATION_UNITE_OWNER_ID;
+  if (!owner) return null;
+  const login = await authRequest('token?grant_type=password', { body: { email, password } });
+  if (!login?.access_token || login.user?.id !== owner) return null;
+  const account = await authRequest('user', { token: login.access_token });
+  return account?.id === owner ? { account, token: login.access_token } : null;
+}
+
+export async function verifiedOwnerEmail(email, password) {
+  if (!usesHostedAuth()) {
+    return verifyPreviewOwner(email, password) ? previewAdminEmail() : null;
+  }
+  const identity = await authenticateOwner(email, password);
+  return identity?.account.email_confirmed_at ? identity.account.email : null;
 }
 
 export async function verifyOwner(email, password, code) {
   if (!usesHostedAuth()) return verifyPreviewOwner(email, password);
-
+  if (usesAdminEmailCode()) return false;
   const requireCode = requiresAdminCode();
   if (requireCode && !/^\d{6}$/.test(code)) return false;
-  const owner = process.env.EDUCATION_UNITE_OWNER_ID;
-  if (!owner) return false;
-  const login = await authRequest('token?grant_type=password', { body: { email, password } });
-  if (!login?.access_token || login.user?.id !== owner) return false;
-  const account = await authRequest('user', { token: login.access_token });
-  if (account?.id !== owner) return false;
+  const identity = await authenticateOwner(email, password);
+  if (!identity) return false;
   if (!requireCode) return true;
+  const { account, token } = identity;
   const factor = account.factors?.find(verifiedTotp);
   if (!factor) return false;
   const path = 'factors/' + encodeURIComponent(factor.id);
-  const challenge = await authRequest(path + '/challenge', { token: login.access_token, body: {} });
+  const challenge = await authRequest(path + '/challenge', { token, body: {} });
   if (!challenge?.id) return false;
   const verified = await authRequest(path + '/verify', {
-    token: login.access_token, body: { challenge_id: challenge.id, code },
+    token, body: { challenge_id: challenge.id, code },
   });
   if (!verified?.access_token) return false;
   const user = await authRequest('user', { token: verified.access_token });
-  if (user?.id !== owner) return false;
+  if (user?.id !== account.id) return false;
   try {
     const claims = JSON.parse(Buffer.from(verified.access_token.split('.')[1], 'base64url'));
-    return claims.sub === owner && claims.aal === 'aal2' && claims.exp > Date.now() / 1000;
+    return claims.sub === account.id && claims.aal === 'aal2' && claims.exp > Date.now() / 1000;
   } catch {
     return false;
   }

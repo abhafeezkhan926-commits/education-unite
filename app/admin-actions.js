@@ -3,7 +3,8 @@
 import { randomBytes } from 'node:crypto';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { endAdminSession, requiresAdminCode, startAdminSession, verifyOwner, withAdmin } from './admin-auth';
+import { endAdminSession, requiresAdminCode, startAdminSession, usesAdminEmailCode, verifiedOwnerEmail, verifyOwner, withAdmin } from './admin-auth';
+import { clearAdminEmailCode, consumeAdminEmailCode, pendingAdminEmailToken, sendAdminEmailCode } from './admin-email-code';
 import { studentTransaction } from './student-db';
 import { consumeAttempt, digest, requestSource } from './student-security';
 
@@ -15,14 +16,40 @@ export async function adminSignIn(_previous, form) {
   if (!await studentTransaction((db) => consumeAttempt(db, 'admin_login', source, 10))) {
     return { error: 'Too many attempts. Try again in 15 minutes.' };
   }
-  if (!email || email.length > 254 || !password || password.length > 128 ||
-      !await verifyOwner(email, password, code)) {
+  const validFields = email && email.length <= 254 && password && password.length <= 128;
+  if (usesAdminEmailCode()) {
+    const recipient = validFields && await verifiedOwnerEmail(email, password);
+    if (!recipient) return { error: 'Check your email and password.' };
+    if (!await sendAdminEmailCode(recipient)) {
+      return { error: 'Could not send the sign-in code. Try again later.' };
+    }
+    redirect('/admin/login?step=email');
+  }
+  if (!validFields || !await verifyOwner(email, password, code)) {
     return { error: requiresAdminCode()
       ? 'Check your email, password and authenticator code.'
       : 'Check your email and password.' };
   }
   await startAdminSession();
   redirect('/admin');
+}
+
+export async function verifyAdminEmailCode(_previous, form) {
+  if (!usesAdminEmailCode()) redirect('/admin/login');
+  const token = await pendingAdminEmailToken();
+  if (!token) redirect('/admin/login');
+  const code = String(form.get('code') ?? '').trim();
+  if (!/^\d{6}$/.test(code) || !await consumeAdminEmailCode(token, code)) {
+    return { error: 'Code is incorrect, expired or out of attempts. Check the code or start again.' };
+  }
+  await clearAdminEmailCode();
+  await startAdminSession();
+  redirect('/admin');
+}
+
+export async function restartAdminEmailLogin() {
+  if (usesAdminEmailCode()) await clearAdminEmailCode();
+  redirect('/admin/login');
 }
 
 export async function adminSignOut() {

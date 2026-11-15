@@ -38,6 +38,7 @@ async function createDatabase() {
     '20261112000001_student_access.sql',
     '20261112000002_practice.sql',
     '20261112000003_owner_admin.sql',
+    '20261114000004_admin_email_code.sql',
   ]) {
     await db.exec(await readFile(join(process.cwd(), 'supabase', 'migrations', migration), 'utf8'));
   }
