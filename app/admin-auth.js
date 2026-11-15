@@ -6,8 +6,12 @@ import { cookieOptions, sessionDigest } from './student-security';
 
 const cookieName = 'eu_admin';
 const sessionAge = 15 * 60;
-export function requiresAdminCode() {
+function usesHostedAuth() {
   return process.env.EDUCATION_UNITE_PREVIEW !== '1' || Boolean(process.env.DATABASE_URL);
+}
+
+export function requiresAdminCode() {
+  return usesHostedAuth() && process.env.EDUCATION_UNITE_TEST_PASSWORD_ONLY !== '1';
 }
 const verifiedTotp = (factor) => factor.factor_type === 'totp' && factor.status === 'verified';
 
@@ -41,15 +45,17 @@ function verifyPreviewOwner(email, password) {
 }
 
 export async function verifyOwner(email, password, code) {
-  if (!requiresAdminCode()) return verifyPreviewOwner(email, password);
+  if (!usesHostedAuth()) return verifyPreviewOwner(email, password);
 
-  if (!/^\d{6}$/.test(code)) return false;
+  const requireCode = requiresAdminCode();
+  if (requireCode && !/^\d{6}$/.test(code)) return false;
   const owner = process.env.EDUCATION_UNITE_OWNER_ID;
   if (!owner) return false;
   const login = await authRequest('token?grant_type=password', { body: { email, password } });
   if (!login?.access_token || login.user?.id !== owner) return false;
   const account = await authRequest('user', { token: login.access_token });
   if (account?.id !== owner) return false;
+  if (!requireCode) return true;
   const factor = account.factors?.find(verifiedTotp);
   if (!factor) return false;
   const path = 'factors/' + encodeURIComponent(factor.id);
