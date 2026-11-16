@@ -1,5 +1,7 @@
 # EducationUnite
 
+Production runs at [education-unite-mvp.vercel.app](https://education-unite-mvp.vercel.app). See the [handover guide](docs/HANDOVER.md) for release checks, owner setup and the service inventory.
+
 ## Run locally
 
 Use Node.js 24 and npm. From the project directory, run `npm ci`, then `npm run dev` and open [localhost:3000](http://localhost:3000). Use `npm run build` to check the production build and `npm start` to serve it locally.
@@ -18,13 +20,15 @@ With the Codex workspace runtime available, set `EDUCATION_UNITE_ARTIFACT_MODULE
 
 With Docker running and the Supabase CLI available, run `supabase init` once if `supabase/config.toml` is absent, then run `supabase start` from the project directory. The CLI applies the migrations in `supabase/migrations` on startup. On a disposable local Supabase instance, `supabase db reset --local` recreates the database and reapplies the migrations. The reset discards local database contents.
 
-For the owner’s UK Supabase deployment, apply the migrations in order and provision a dedicated PostgreSQL login with membership in `education_unite_app` and `education_unite_admin` and permission to switch into both roles. Set `DATABASE_URL` to its connection string with certificate verification and set `EDUCATION_UNITE_SECRET` to a stable random secret of at least 32 bytes. Store both values in server-only environment variables.
+Production uses the owner-approved Sydney Supabase project. When provisioning a fresh project, apply the migrations in order and provision a dedicated PostgreSQL login with membership in `education_unite_app` and `education_unite_admin` and permission to switch into both roles. Set `DATABASE_URL` to its connection string with certificate verification and set `EDUCATION_UNITE_SECRET` to a stable random secret of at least 32 bytes. Store both values in server-only environment variables.
 
 ## Owner admin
 
-For a local preview, open `/admin/login` and use `owner@example.test` and the temporary local password printed by the preview command. Run `npm run preview:student -- --admin-code` in another terminal to get the current test authenticator code. It changes every 30 seconds. The test owner is available only in loopback preview mode with the in-memory database.
+For a local preview, open `/admin/login` and use `owner@example.test` and the password configured as `EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD` in `.env.local`. If you leave it unset, the preview command generates and prints a temporary password. The test owner is available only in loopback preview mode with the in-memory database.
 
-For a hosted project, provision Husain's Supabase Auth user with email and password and enroll and verify a TOTP factor using Supabase's [TOTP enrollment flow](https://supabase.com/docs/guides/auth/auth-mfa/totp). Configure the server-only `EDUCATION_UNITE_SUPABASE_URL`, `EDUCATION_UNITE_SUPABASE_KEY` (publishable or legacy anon key) and `EDUCATION_UNITE_OWNER_ID` (Husain's Auth user UUID). The admin session lasts 15 minutes.
+The current Vercel deployment uses email verification codes. Configure the server-only `EDUCATION_UNITE_SUPABASE_URL`, `EDUCATION_UNITE_SUPABASE_KEY` (publishable or legacy anon key), and `EDUCATION_UNITE_OWNER_ID` (the primary admin's Auth user UUID). For email-code mode, apply the admin email challenge migration and set `EDUCATION_UNITE_ADMIN_EMAIL_CODE=1`, `RESEND_API_KEY`, and `EDUCATION_UNITE_ADMIN_EMAIL_FROM`. The configured owner receives the code at their confirmed Supabase email address. The Resend test sender supports its linked inbox.
+
+From `/admin/login`, enter the admin credentials, select **Send email code**, and enter the six-digit code in the same browser. Codes expire after five minutes and can be used once. The admin session lasts 15 minutes. Hosted environments with email-code mode off default to [Supabase TOTP](https://supabase.com/docs/guides/auth/auth-mfa/totp).
 
 Generate a code at `/admin/codes`. It works in the student join screen for 168 hours. To reset a student password, use `/admin/password-reset` with the student's username and share the resulting one-time password privately. It expires after 15 minutes and immediately replaces any previous reset credential, disables the old password and revokes all of the student's existing sessions. The student can set a new password from the sign-in screen. If the credential expires, issue a fresh one. The reset flow purges expired reset records when students use the reset form.
 

@@ -14,7 +14,7 @@ export function usesLocalAdminTestCode() {
 
 function codeDigest(token, code) {
   return digest('admin-email-code', [
-    process.env.EDUCATION_UNITE_OWNER_ID, process.env.EDUCATION_UNITE_ADDITIONAL_ADMIN_IDS, token, code,
+    process.env.EDUCATION_UNITE_OWNER_ID, '', token, code,
   ].join(':'));
 }
 
