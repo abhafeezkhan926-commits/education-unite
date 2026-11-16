@@ -1,36 +1,18 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { PGlite } from '@electric-sql/pglite';
-import pg from 'pg';
+import { createPostgresTransaction } from './postgres-transaction.mjs';
 import { digest } from './student-security';
+import { isLocalPreview } from './runtime-config.mjs';
 
 async function createDatabase() {
   if (process.env.DATABASE_URL) {
-    const ca = process.env.DATABASE_CA_CERT;
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      max: 3,
-      ...(ca && { ssl: { ca, rejectUnauthorized: true } }),
-    });
-    return async (work) => {
-      const client = await pool.connect();
-      try {
-        await client.query('begin');
-        const result = await work(client);
-        await client.query('commit');
-        return result;
-      } catch (error) {
-        await client.query('rollback');
-        throw error;
-      } finally {
-        client.release();
-      }
-    };
+    return createPostgresTransaction(process.env.DATABASE_URL, process.env.DATABASE_CA_CERT);
   }
 
-  if (process.env.EDUCATION_UNITE_PREVIEW !== '1') {
+  if (!isLocalPreview()) {
     throw new Error('Configure DATABASE_URL or explicitly start the local preview.');
   }
+  const { PGlite } = await import('@electric-sql/pglite');
   const db = await PGlite.create();
   await db.exec('create role anon; create role authenticated;');
   for (const migration of [

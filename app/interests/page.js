@@ -15,7 +15,7 @@ export default async function Interests() {
       <main className="student-card">
         <Link href="/student">Student home</Link>
         <h1>Pick your interests</h1>
-        <p className="practice-note">Local preview with sample questions.</p>
+        <p className="practice-note">Choose interests to personalise your practice questions.</p>
         <StudentForm action={startPractice} submit="Start practice">
           <fieldset className="interest-options">
             <legend>Choose 1 to 3 interests</legend>

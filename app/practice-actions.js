@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 import { interests, makeQuestions } from './practice-bank';
+import { matchesAnswer, parsePracticeAnswer } from './workbook-arithmetic.mjs';
 import { readPractice } from './practice-state';
 import { withStudent } from './student-session';
 
@@ -40,15 +41,17 @@ async function completePractice(db, studentId, id, state) {
     'insert into education_unite.practice_sessions (id, student_id, duration_seconds) values ($1, $2, $3)',
     [id, studentId, duration],
   );
-  for (const [position, answer] of state.answers.entries()) {
+  const answers = state.answers.map((answer, position) => {
     const { prompt, unit, expected } = state.questions[position];
-    await db.query(
-      `insert into education_unite.practice_answers
-         (practice_session_id, question_position, question_snapshot, answer)
-       values ($1, $2, $3, $4)`,
-      [id, position + 1, JSON.stringify({ prompt, unit, expected }), answer.value],
-    );
-  }
+    return { position: position + 1, snapshot: { prompt, unit, expected }, answer: answer.value };
+  });
+  await db.query(
+    `insert into education_unite.practice_answers
+       (practice_session_id, question_position, question_snapshot, answer)
+     select $1, position, snapshot, answer
+     from jsonb_to_recordset($2::jsonb) as item(position int, snapshot jsonb, answer text)`,
+    [id, JSON.stringify(answers)],
+  );
   const summary = {
     duration,
     total: state.questions.length,
@@ -76,8 +79,10 @@ export async function updatePractice(form) {
       state.hints = Math.min(state.hints + 1, question.hints.length);
     } else if (operation === 'answer' && !answered) {
       const value = String(form.get('answer') ?? '').trim();
-      if (!/^[+-]?\d{1,12}(?:\.\d{1,6})?$/.test(value)) return '/practice?error=number';
-      state.answers.push({ value, correct: Number(value) === question.expected, hints: state.hints });
+      const parsed = value.length <= 32 ? parsePracticeAnswer(value, question.format) : null;
+      if (parsed === null) return '/practice?error=number';
+      const correct = matchesAnswer(parsed, question.expected);
+      state.answers.push({ value, correct, hints: state.hints });
     } else if (operation === 'next' && answered) {
       if (state.position + 1 === state.questions.length) {
         await completePractice(db, student.id, id, state);

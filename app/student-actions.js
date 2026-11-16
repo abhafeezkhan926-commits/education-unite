@@ -5,23 +5,24 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { studentTransaction } from './student-db';
 import {
-  consumeAttempt, cookieOptions, digest, hashPassword, joinAge, joinName, makeJoinTicket,
+  consumeAttempt, cookieOptions, digest, hashPassword, isRateLimited, joinAge, joinName, makeJoinTicket,
   readJoinTicket, requestSource, sessionAge, sessionDigest, sessionName, usernameOptions, verifyPassword,
+  makeStudentDevice, readStudentDevice, studentDeviceAge, studentDeviceName,
 } from './student-security';
 
 const codeQuery = 'select id from education_unite.join_codes where code_digest = $1 and expires_at > now()';
 const slowDown = 'Too many attempts. Try again in 15 minutes.';
-
-async function allowJoin() {
-  const source = requestSource(await headers());
-  return studentTransaction((db) => consumeAttempt(db, 'student_join', source, 40));
-}
+const unavailable = 'This service is temporarily unavailable. Try again in a few minutes.';
+const joinFailuresPerNetwork = 30;
+const accountAttemptsPerTicket = 3;
+// Leave room for several classes to sign in together, with a separate per-account limit.
+const signInsPerNetwork = 600;
 
 async function issueSession(db, studentId, token) {
   await db.query('delete from education_unite.student_sessions where expires_at <= now()');
   await db.query(
-    "insert into education_unite.student_sessions (student_id, token_digest, expires_at) values ($1, $2, now() + interval '168 hours')",
-    [studentId, sessionDigest(token)],
+    "insert into education_unite.student_sessions (student_id, token_digest, expires_at) values ($1, $2, now() + $3 * interval '1 second')",
+    [studentId, sessionDigest(token), sessionAge],
   );
 }
 
@@ -35,12 +36,18 @@ async function openStudentPage(token) {
 }
 
 export async function checkJoinCode(_previous, form) {
-  if (!await allowJoin()) return { error: slowDown };
+  const source = requestSource(await headers(), { requireTrusted: true });
+  if (!source) return { error: unavailable };
   const code = String(form.get('code') ?? '').trim().toUpperCase();
-  if (!/^[A-Z0-9-]{4,64}$/.test(code)) return { error: 'Enter a valid class code.' };
-  const codeDigest = digest('join-code', code);
-  const { rows } = await studentTransaction((db) => db.query(codeQuery, [codeDigest]));
-  if (!rows.length) return { error: 'That class code is invalid or expired.' };
+  const codeDigest = /^[A-Z0-9-]{4,64}$/.test(code) ? digest('join-code', code) : null;
+  const bucket = 'code-failures:' + source;
+  const error = await studentTransaction(async (db) => {
+    if (await isRateLimited(db, 'student_join', bucket, joinFailuresPerNetwork)) return slowDown;
+    if (codeDigest && (await db.query(codeQuery, [codeDigest])).rows.length) return null;
+    if (!await consumeAttempt(db, 'student_join', bucket, joinFailuresPerNetwork)) return slowDown;
+    return codeDigest ? 'That class code is invalid or expired.' : 'Enter a valid class code.';
+  });
+  if (error) return { error };
   (await cookies()).set(joinName, makeJoinTicket(codeDigest), cookieOptions(joinAge));
   redirect('/join');
 }
@@ -51,13 +58,16 @@ export async function restartJoin() {
 }
 
 export async function createStudent(_previous, form) {
-  if (!await allowJoin()) return { error: slowDown };
   const ticket = readJoinTicket((await cookies()).get(joinName)?.value);
   const username = String(form.get('username') ?? '');
   const password = String(form.get('password') ?? '');
   if (!ticket) return { error: 'Your join request expired. Start again with your class code.' };
   if (!usernameOptions(ticket.nonce).includes(username)) return { error: 'Choose one of the suggested usernames.' };
   if (password.length < 12 || password.length > 128) return { error: 'Choose a password with 12 to 128 characters.' };
+  const allowed = await studentTransaction((db) =>
+    consumeAttempt(db, 'student_join', 'ticket:' + ticket.nonce, accountAttemptsPerTicket),
+  );
+  if (!allowed) return { error: 'Start again with your class code to get new usernames.' };
   const passwordHash = await hashPassword(password);
   const token = randomBytes(32).toString('base64url');
   const outcome = await studentTransaction(async (db) => {
@@ -81,27 +91,35 @@ export async function createStudent(_previous, form) {
 export async function signIn(_previous, form) {
   const username = String(form.get('username') ?? '').trim().toLowerCase();
   const password = String(form.get('password') ?? '');
-  const source = requestSource(await headers());
-  if (!await studentTransaction((db) => consumeAttempt(db, 'student_login', 'source:' + source, 100))) {
+  const source = requestSource(await headers(), { requireTrusted: true });
+  if (!source) return { error: unavailable };
+  if (!await studentTransaction((db) => consumeAttempt(db, 'student_login', 'source:' + source, signInsPerNetwork))) {
     return { error: slowDown };
   }
   const invalid = { error: 'Username or password is incorrect.' };
   if (!/^[a-z0-9]{1,64}$/.test(username) || password.length < 1 || password.length > 128) return invalid;
-  const bucket = 'account:' + username;
+  const jar = await cookies();
+  const deviceCookie = jar.get(studentDeviceName)?.value;
   const result = await studentTransaction(async (db) => {
     await db.query('select education_unite.lock_student($1)', [username]);
-    if (!await consumeAttempt(db, 'student_login', bucket, 5)) return { locked: true };
     const { rows } = await db.query('select id, password_hash from education_unite.students where username = $1', [username]);
     const student = rows[0];
+    const device = readStudentDevice(deviceCookie, username, student?.password_hash);
+    const bucket = device ? `device:${username}:${device}` : 'account:' + username;
+    if (!await consumeAttempt(db, 'student_login', bucket, 5)) return { locked: true };
     if (!await verifyPassword(password, student?.password_hash)) return {};
     const token = randomBytes(32).toString('base64url');
     await issueSession(db, student.id, token);
     await db.query('delete from education_unite.rate_limit_windows where action = $1 and subject_digest = $2',
       ['student_login', digest('student_login', bucket)]);
-    return { token };
+    const remembered = form.get('rememberDevice') === 'on'
+      ? makeStudentDevice(username, student.password_hash, device ?? undefined) : null;
+    return { token, remembered, device };
   });
   if (result.locked) return { error: slowDown };
   if (!result.token) return invalid;
+  if (result.remembered) jar.set(studentDeviceName, result.remembered, cookieOptions(studentDeviceAge));
+  else if (result.device) jar.set(studentDeviceName, '', cookieOptions(0));
   await openStudentPage(result.token);
 }
 

@@ -9,25 +9,30 @@ export const interests = [
   { id: 'beauty', label: 'Beauty and make-up' },
 ];
 
+/** @type {Record<string, (values: {total: number, c: number}) => number>} */
 export const answerRules = {
   multiply: ({ total }) => total,
   remaining: ({ total, c }) => total - c,
   percentage: ({ total, c }) => total * c / 100,
 };
 
+/** @typedef {{id: string, interest: string, rule: string, unit: string, prompt: string, hints: string[], solution: string[], use: string}} Template */
+
+/** @param {Template[]} templates */
 export function validateTemplates(templates) {
-  const byInterest = new Map(interests.map(({ id }) => [id, []]));
+  const byInterest = new Map(interests.map(({ id }) => [id, /** @type {Template[]} */ ([]) ]));
   const ids = new Set();
 
   for (const template of templates) {
     const { id, interest, rule, unit, prompt, hints, solution, use } = template;
-    const validText = (value) => typeof value === 'string' && value.trim().length > 0;
+    const validText = (/** @type {unknown} */ value) => typeof value === 'string' && value.trim().length > 0;
     const requiredVariables = rule === 'multiply' ? ['a', 'b'] : ['a', 'b', 'c'];
     const displayedText = [prompt, ...hints, ...solution, use];
-    const invalidPlaceholder = (value) =>
+    const invalidPlaceholder = (/** @type {string} */ value) =>
       /[{}]/.test(value.replace(/\{(?:a|b|c|total|answer)\}/g, ''));
 
-    if (!/^[a-z0-9-]+$/.test(id) || ids.has(id) || !byInterest.has(interest) ||
+    const entries = byInterest.get(interest);
+    if (!/^[a-z0-9-]+$/.test(id) || ids.has(id) || !entries ||
         !Object.hasOwn(answerRules, rule) || !validText(unit) || !displayedText.every(validText) ||
         displayedText.some(invalidPlaceholder) || hints.length > 3 || !solution.length ||
         !requiredVariables.every((variable) => prompt.includes(`{${variable}}`)) ||
@@ -36,7 +41,7 @@ export function validateTemplates(templates) {
       throw new Error(`Invalid question template: ${id || '(missing ID)'}`);
     }
     ids.add(id);
-    byInterest.get(interest).push(template);
+    entries.push(template);
   }
 
   for (const [interest, entries] of byInterest) {

@@ -1,4 +1,5 @@
 import StudentBackdrop from '../student-backdrop';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { updatePractice } from '../practice-actions';
 import { currentPractice } from '../practice-state';
@@ -45,13 +46,18 @@ export default async function Practice({ searchParams }) {
   const question = state.questions[state.position];
   const answer = state.answers[state.position];
   const last = state.position + 1 === state.questions.length;
+  const nonce = (await headers()).get('x-csp-nonce') ?? undefined;
+  const answerError = {
+    fraction: 'Enter a fraction, for example 2/15.',
+    standard: 'Enter a number in standard form, for example 1.2 × 10^5.',
+  }[question.format] ?? 'Enter your answer as a number.';
   const invalidNumber = (await searchParams).error === 'number';
 
   return (
     <>
       <StudentBackdrop />
       <main className="student-card practice-card">
-        <noscript><style>{'.practice-typing-unrevealed { visibility: visible; }'}</style></noscript>
+        <noscript><style nonce={nonce}>{'.practice-typing-unrevealed { visibility: visible; }'}</style></noscript>
         <p>Question {state.position + 1} of {state.questions.length} · {question.interest}</p>
         <h1>Maths practice</h1>
         <p className="question-prompt">{question.prompt}</p>
@@ -83,9 +89,10 @@ export default async function Practice({ searchParams }) {
             )}
             <PracticeForm practice={practice} operation="answer">
               <label>Your answer ({question.unit})
-                <input name="answer" inputMode="decimal" autoComplete="off" required maxLength={20} />
+                <input name="answer" inputMode={question.format && question.format !== 'decimal' ? 'text' : 'decimal'}
+                  autoComplete="off" required maxLength={32} />
               </label>
-              {invalidNumber && <p className="form-error" role="alert">Enter your answer as a number.</p>}
+              {invalidNumber && <p className="form-error" role="alert">{answerError}</p>}
               <PracticeSubmitButton pendingLabel="Checking answer…">Check answer</PracticeSubmitButton>
             </PracticeForm>
           </>

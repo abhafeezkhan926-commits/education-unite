@@ -1,26 +1,28 @@
 # EducationUnite
 
-Production runs at [education-unite-mvp.vercel.app](https://education-unite-mvp.vercel.app). See the [handover guide](docs/HANDOVER.md) for release checks, owner setup and the service inventory.
+Production runs at [education-unite-mvp.vercel.app](https://education-unite-mvp.vercel.app).
 
 ## Run locally
 
-Use Node.js 24 and npm. From the project directory, run `npm ci`, then `npm run dev` and open [localhost:3000](http://localhost:3000). Use `npm run build` to check the production build and `npm start` to serve it locally.
+Use Node.js 24 and npm. On Windows, use Node.js 24.22.1 or a newer Node 24 release for the local regression suite. Node 24.18.1 showed intermittent V8 crashes and loopback connection resets on the project workstation. From the project directory, run `npm ci`, then `npm run dev` and open [localhost:3000](http://localhost:3000). Use `npm run build` to check the production build and `npm start` to serve it locally.
 
 Run `npm run build` followed by `npm test` for the regression checks. The tests apply the migrations to a disposable database, validate the 24-template bank and submit the forms served by the production build on loopback. GitHub Actions runs the same checks and an npm dependency audit on pushes and pull requests.
 
-To try student sign-up, sign-in and maths practice locally, run `npm run build` and then `npm run preview:student -- --port 3002`. Open [the local preview](http://127.0.0.1:3002) and enter class code `EU-PREVIEW`. Use a test password. After joining, select **Start maths practice**. The preview uses sample questions while the client spreadsheet is pending. The preview binds to loopback and uses an in-memory PostgreSQL database, so accounts and sessions reset when the server restarts.
+To try student sign-up, sign-in and maths practice locally, run `npm run build` and then `npm run preview:student -- --port 3002`. Open [the local preview](http://127.0.0.1:3002) and enter class code `EU-PREVIEW`. Use a test password. After joining, select **Start maths practice**. The preview binds to loopback and uses an in-memory PostgreSQL database, so accounts and sessions reset when the server restarts.
 
-## Replace the sample question workbook
+## Update the practice workbook
 
-The local bank comes from [sample-question-templates.xlsx](outputs/01a1d35d-1ffd-7803-b4c2-8cf9c0cc2df9/sample-question-templates.xlsx). Copy the real content into the sample's `Templates` tab structure, with three rows per interest and a unique ID for each row. The current rules are `multiply` (`a × b`), `remaining` (`a × b − c`), and `percentage` (`a × b × c ÷ 100`). Text placeholders are `{a}`, `{b}`, `{c}`, `{total}`, and `{answer}`. Review any new answer rules before importing.
+The approved question bank has 24 templates across Shopping and finance, Pop culture, and Music and streaming. The importer validates the template ranges, formulas, hints, worked solutions and example answers.
 
-With the Codex workspace runtime available, set `EDUCATION_UNITE_ARTIFACT_MODULES` to its Node `node_modules` path. Run `node scripts/import-practice-sheet.mjs path/to/workbook.xlsx` from the project root. The importer validates the workbook before replacing `app/practice-templates.json`. Rebuild and restart the preview to load the new bank.
+Run `node scripts/import-practice-sheet.mjs path/to/workbook.xlsx` to regenerate the checked-in question bank. Append `--check` to verify that the workbook matches the generated bank. Rebuild the application after importing.
 
 ## Apply the local database migration
 
 With Docker running and the Supabase CLI available, run `supabase init` once if `supabase/config.toml` is absent, then run `supabase start` from the project directory. The CLI applies the migrations in `supabase/migrations` on startup. On a disposable local Supabase instance, `supabase db reset --local` recreates the database and reapplies the migrations. The reset discards local database contents.
 
 Production uses the owner-approved Sydney Supabase project. When provisioning a fresh project, apply the migrations in order and provision a dedicated PostgreSQL login with membership in `education_unite_app` and `education_unite_admin` and permission to switch into both roles. Set `DATABASE_URL` to its connection string with certificate verification and set `EDUCATION_UNITE_SECRET` to a stable random secret of at least 32 bytes. Store both values in server-only environment variables.
+
+Enable `pg_cron` on the hosted database before applying `20261116000005_expired_records.sql` to schedule hourly cleanup. If the migration was applied before `pg_cron` was enabled, an operator with migration privileges can register the same schedule from the migration after enabling the extension.
 
 ## Owner admin
 

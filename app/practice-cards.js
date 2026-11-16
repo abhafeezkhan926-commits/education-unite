@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const cards = [
   { title: 'Join with a code', description: 'Use the code from your teacher or parent.', label: 'Join code', values: ['Enter your code'], accent: '#8beef7' },
-  { title: 'Pick your interests', description: 'Choose up to three interests to personalise your questions.', label: 'Example interests', values: ['Sport', 'Music', 'Gaming'], accent: '#82b8ff' },
+  { title: 'Pick your interests', description: 'Choose up to three interests to personalise your questions.', label: 'Example interests', values: ['Shopping', 'Pop culture', 'Music'], accent: '#82b8ff' },
   { title: 'Try a maths question', description: 'A game costs £40. It’s 25% off. What’s the sale price?', label: 'Your answer', values: ['£ …'], accent: '#b6a0ff' },
   { title: 'Hints & worked solution', description: 'Find 25% of £40, then subtract the discount.', label: 'Worked example', values: ['£40 ÷ 4 = £10', '£40 − £10 = £30'], accent: '#e8a0ff' },
   { title: 'Session summary', description: 'See how you did at the end of your practice.', label: 'Example results', values: ['Score 4/5', 'Hints used 2', 'Time 6 min'], accent: '#ff8cdb' },

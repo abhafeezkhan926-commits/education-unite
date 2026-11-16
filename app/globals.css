@@ -126,6 +126,12 @@ a, .text-button {
   gap: 0.5rem;
 }
 
+.student-form .remember-device {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .student-form {
   gap: 1rem;
 }

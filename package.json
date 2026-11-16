@@ -5,7 +5,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test",
+    "lint": "eslint app scripts test *.mjs instrumentation.js proxy.js",
+    "typecheck": "tsc --project tsconfig.check.json",
+    "test": "node --v8-pool-size=1 --max-old-space-size=256 --wasm-num-compilation-tasks=1 --wasm-lazy-compilation --no-wasm-tier-up --test --test-concurrency=1",
     "preview:student": "node scripts/student-preview.cjs"
   },
   "dependencies": {
@@ -14,5 +16,10 @@
     "pg": "^8.23.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^10.15.0",
+    "read-excel-file": "^9.3.17",
+    "typescript": "^7.0.2"
   }
 }

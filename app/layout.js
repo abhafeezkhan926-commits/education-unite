@@ -1,3 +1,4 @@
+import { connection } from 'next/server';
 import './globals.css';
 
 export const metadata = {
@@ -6,7 +7,8 @@ export const metadata = {
   icons: { icon: '/educationunite-mark.png' },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  await connection();
   return (
     <html lang="en-GB">
       <body>{children}</body>

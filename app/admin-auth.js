@@ -3,26 +3,30 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { adminTransaction } from './student-db';
 import { cookieOptions, sessionDigest } from './student-security';
+import { isLocalPreview } from './runtime-config.mjs';
+import { verifyOwnerTotp } from './admin-totp.mjs';
 
 const cookieName = 'eu_admin';
 const sessionAge = 15 * 60;
 function usesHostedAuth() {
-  return process.env.EDUCATION_UNITE_PREVIEW !== '1' || Boolean(process.env.DATABASE_URL);
+  return !isLocalPreview();
 }
 
 export function requiresAdminCode() {
-  return usesHostedAuth() && !usesAdminEmailCode() && process.env.EDUCATION_UNITE_TEST_PASSWORD_ONLY !== '1';
+  return usesHostedAuth() && !usesAdminEmailCode();
 }
 
 export function usesAdminEmailCode() {
-  return process.env.EDUCATION_UNITE_ADMIN_EMAIL_CODE === '1';
+  return process.env.EDUCATION_UNITE_ADMIN_EMAIL_CODE === '1' &&
+    (!isLocalPreview() || process.env.EDUCATION_UNITE_LOCAL_ADMIN_TEST_CODE === '1');
 }
-const verifiedTotp = (factor) => factor.factor_type === 'totp' && factor.status === 'verified';
+
+export class AdminAuthUnavailable extends Error {}
 
 async function authRequest(path, { token, body } = {}) {
   const url = process.env.EDUCATION_UNITE_SUPABASE_URL;
   const key = process.env.EDUCATION_UNITE_SUPABASE_KEY;
-  if (!url || !key) return null;
+  if (!url || !key) throw new AdminAuthUnavailable();
   try {
     const response = await fetch(new URL('/auth/v1/' + path, url), {
       method: body ? 'POST' : 'GET',
@@ -36,9 +40,11 @@ async function authRequest(path, { token, body } = {}) {
       redirect: 'error',
       signal: AbortSignal.timeout(8000),
     });
+    if (response.status >= 500 || response.status === 429) throw new AdminAuthUnavailable();
     return response.ok ? await response.json() : null;
   } catch {
-    return null;
+    console.error(JSON.stringify({ event: 'owner_auth_unavailable' }));
+    throw new AdminAuthUnavailable();
   }
 }
 
@@ -72,29 +78,9 @@ export async function verifiedOwnerEmail(email, password) {
 export async function verifyOwner(email, password, code) {
   if (!usesHostedAuth()) return verifyPreviewOwner(email, password);
   if (usesAdminEmailCode()) return false;
-  const requireCode = requiresAdminCode();
-  if (requireCode && !/^\d{6}$/.test(code)) return false;
+  if (!/^\d{6}$/.test(code)) return false;
   const identity = await authenticateOwner(email, password);
-  if (!identity) return false;
-  if (!requireCode) return true;
-  const { account, token } = identity;
-  const factor = account.factors?.find(verifiedTotp);
-  if (!factor) return false;
-  const path = 'factors/' + encodeURIComponent(factor.id);
-  const challenge = await authRequest(path + '/challenge', { token, body: {} });
-  if (!challenge?.id) return false;
-  const verified = await authRequest(path + '/verify', {
-    token, body: { challenge_id: challenge.id, code },
-  });
-  if (!verified?.access_token) return false;
-  const user = await authRequest('user', { token: verified.access_token });
-  if (user?.id !== account.id) return false;
-  try {
-    const claims = JSON.parse(Buffer.from(verified.access_token.split('.')[1], 'base64url'));
-    return claims.sub === account.id && claims.aal === 'aal2' && claims.exp > Date.now() / 1000;
-  } catch {
-    return false;
-  }
+  return identity ? verifyOwnerTotp(authRequest, identity, code) : false;
 }
 
 export async function startAdminSession() {
@@ -105,8 +91,8 @@ export async function startAdminSession() {
     await db.query('delete from education_unite.admin_sessions where expires_at <= now() or token_digest = $1',
       [oldToken ? sessionDigest(oldToken) : null]);
     await db.query(
-      "insert into education_unite.admin_sessions values ($1, now() + interval '15 minutes')",
-      [sessionDigest(token)],
+      "insert into education_unite.admin_sessions (token_digest, expires_at) values ($1, now() + $2 * interval '1 second')",
+      [sessionDigest(token), sessionAge],
     );
   });
   jar.set(cookieName, token, { ...cookieOptions(sessionAge), path: '/admin' });

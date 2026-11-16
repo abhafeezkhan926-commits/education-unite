@@ -3,7 +3,7 @@
 import { randomBytes } from 'node:crypto';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { endAdminSession, requiresAdminCode, startAdminSession, usesAdminEmailCode, verifiedOwnerEmail, verifyOwner, withAdmin } from './admin-auth';
+import { AdminAuthUnavailable, endAdminSession, requiresAdminCode, startAdminSession, usesAdminEmailCode, verifiedOwnerEmail, verifyOwner, withAdmin } from './admin-auth';
 import { clearAdminEmailCode, consumeAdminEmailCode, pendingAdminEmailToken, sendAdminEmailCode } from './admin-email-code';
 import { studentTransaction } from './student-db';
 import { consumeAttempt, digest, requestSource } from './student-security';
@@ -16,6 +16,15 @@ export async function adminSignIn(_previous, form) {
   if (!await studentTransaction((db) => consumeAttempt(db, 'admin_login', source, 10))) {
     return { error: 'Too many attempts. Try again in 15 minutes.' };
   }
+  try {
+    return await authenticateAdmin(email, password, code);
+  } catch (error) {
+    if (error instanceof AdminAuthUnavailable) return { error: 'Sign-in is temporarily unavailable. Try again in a few minutes.' };
+    throw error;
+  }
+}
+
+async function authenticateAdmin(email, password, code) {
   const validFields = email && email.length <= 254 && password && password.length <= 128;
   if (usesAdminEmailCode()) {
     const recipient = validFields && await verifiedOwnerEmail(email, password);

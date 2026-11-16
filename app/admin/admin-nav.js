@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 const sections = [
   ['/admin', 'Dashboard', 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z'],
   ['/admin/codes', 'Generate Class Code', 'M9 6l-6 6 6 6m6-12 6 6-6 6'],
+  ['/admin/password-reset', 'Reset Password', 'M8 11V7a4 4 0 0 1 8 0v4M6 11h12v9H6z'],
   ['/admin/settings', 'Settings', 'M4 7h16M4 17h16M8 4v6m8 4v6'],
 ];
 const desktopQuery = '(min-width: 56rem)';

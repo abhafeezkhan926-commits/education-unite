@@ -1,7 +1,8 @@
-import { randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomInt } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { adminTransaction } from './student-db';
 import { cookieOptions, digest, sessionDigest } from './student-security';
+import { consumeEmailChallenge } from './admin-email-challenge.mjs';
 
 const cookieName = 'eu_admin_email';
 const maxAge = 300;
@@ -47,8 +48,8 @@ export async function sendAdminEmailCode(email) {
     await db.query('delete from education_unite.admin_email_challenges where expires_at <= now()');
     await db.query(
       `insert into education_unite.admin_email_challenges (token_digest, code_digest, expires_at)
-       values ($1, $2, now() + interval '5 minutes')`,
-      [tokenDigest, codeDigest(token, code)],
+       values ($1, $2, now() + $3 * interval '1 second')`,
+      [tokenDigest, codeDigest(token, code), maxAge],
     );
   });
 
@@ -71,6 +72,7 @@ export async function sendAdminEmailCode(email) {
   }).catch(() => null);
 
   if (!localTest && !response?.ok) {
+    console.error(JSON.stringify({ event: 'owner_email_delivery_failed', status: response?.status ?? null }));
     await adminTransaction((db) => db.query(
       'delete from education_unite.admin_email_challenges where token_digest = $1', [tokenDigest],
     ));
@@ -82,19 +84,5 @@ export async function sendAdminEmailCode(email) {
 }
 
 export async function consumeAdminEmailCode(token, code) {
-  const tokenDigest = sessionDigest(token);
-  return adminTransaction(async (db) => {
-    const { rows: [challenge] } = await db.query(
-      `update education_unite.admin_email_challenges
-       set attempts_remaining = attempts_remaining - 1
-       where token_digest = $1 and expires_at > now() and attempts_remaining > 0
-       returning code_digest`,
-      [tokenDigest],
-    );
-    if (!challenge || !timingSafeEqual(Buffer.from(challenge.code_digest, 'hex'), Buffer.from(codeDigest(token, code), 'hex'))) {
-      return false;
-    }
-    await db.query('delete from education_unite.admin_email_challenges where token_digest = $1', [tokenDigest]);
-    return true;
-  });
+  return adminTransaction((db) => consumeEmailChallenge(db, sessionDigest(token), codeDigest(token, code)));
 }

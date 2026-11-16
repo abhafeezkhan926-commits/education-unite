@@ -1,410 +1,1130 @@
 [
   {
-    "id": "gaming-01",
-    "interest": "gaming",
-    "rule": "multiply",
-    "unit": "points",
-    "prompt": "There are {a} tournament rounds with {b} points each. How many points are there altogether?",
-    "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
-    ],
-    "solution": [
-      "There are {a} equal groups of {b} points.",
-      "{a} × {b} = {answer} points."
-    ],
-    "use": "Compare total scores across tournament rounds."
-  },
-  {
-    "id": "gaming-02",
-    "interest": "gaming",
-    "rule": "remaining",
-    "unit": "points",
-    "prompt": "There are {a} tournament rounds with {b} points each. After {c} points are used, how many are left?",
-    "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
-    ],
-    "solution": [
-      "{a} × {b} = {total} points to begin with.",
-      "{total} − {c} = {answer} points remaining."
-    ],
-    "use": "Compare total scores across tournament rounds."
-  },
-  {
-    "id": "gaming-03",
-    "interest": "gaming",
-    "rule": "percentage",
-    "unit": "points",
-    "prompt": "There are {a} tournament rounds with {b} points each. You have used {c}% of the total. How many points have you used?",
-    "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
-    ],
-    "solution": [
-      "{a} × {b} = {total} points in total.",
-      "{total} × {c} ÷ 100 = {answer} points used."
-    ],
-    "use": "Compare total scores across tournament rounds."
-  },
-  {
-    "id": "sport-01",
-    "interest": "sport",
-    "rule": "multiply",
-    "unit": "minutes",
-    "prompt": "There are {a} training sessions with {b} minutes each. How many minutes are there altogether?",
-    "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
-    ],
-    "solution": [
-      "There are {a} equal groups of {b} minutes.",
-      "{a} × {b} = {answer} minutes."
-    ],
-    "use": "Work out the time a team spends training."
-  },
-  {
-    "id": "sport-02",
-    "interest": "sport",
-    "rule": "remaining",
-    "unit": "minutes",
-    "prompt": "There are {a} training sessions with {b} minutes each. After {c} minutes are used, how many are left?",
-    "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
-    ],
-    "solution": [
-      "{a} × {b} = {total} minutes to begin with.",
-      "{total} − {c} = {answer} minutes remaining."
-    ],
-    "use": "Work out the time a team spends training."
-  },
-  {
-    "id": "sport-03",
-    "interest": "sport",
-    "rule": "percentage",
-    "unit": "minutes",
-    "prompt": "There are {a} training sessions with {b} minutes each. You have used {c}% of the total. How many minutes have you used?",
-    "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
-    ],
-    "solution": [
-      "{a} × {b} = {total} minutes in total.",
-      "{total} × {c} ÷ 100 = {answer} minutes used."
-    ],
-    "use": "Work out the time a team spends training."
-  },
-  {
-    "id": "music-01",
-    "interest": "music",
-    "rule": "multiply",
-    "unit": "minutes",
-    "prompt": "There are {a} rehearsal blocks with {b} minutes each. How many minutes are there altogether?",
-    "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
-    ],
-    "solution": [
-      "There are {a} equal groups of {b} minutes.",
-      "{a} × {b} = {answer} minutes."
-    ],
-    "use": "Plan how much rehearsal time is available."
-  },
-  {
-    "id": "music-02",
-    "interest": "music",
-    "rule": "remaining",
-    "unit": "minutes",
-    "prompt": "There are {a} rehearsal blocks with {b} minutes each. After {c} minutes are used, how many are left?",
-    "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
-    ],
-    "solution": [
-      "{a} × {b} = {total} minutes to begin with.",
-      "{total} − {c} = {answer} minutes remaining."
-    ],
-    "use": "Plan how much rehearsal time is available."
-  },
-  {
-    "id": "music-03",
-    "interest": "music",
-    "rule": "percentage",
-    "unit": "minutes",
-    "prompt": "There are {a} rehearsal blocks with {b} minutes each. You have used {c}% of the total. How many minutes have you used?",
-    "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
-    ],
-    "solution": [
-      "{a} × {b} = {total} minutes in total.",
-      "{total} × {c} ÷ 100 = {answer} minutes used."
-    ],
-    "use": "Plan how much rehearsal time is available."
-  },
-  {
-    "id": "fashion-01",
-    "interest": "fashion",
-    "rule": "multiply",
-    "unit": "fabric swatches",
-    "prompt": "There are {a} sample packs with {b} fabric swatches each. How many fabric swatches are there altogether?",
-    "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
-    ],
-    "solution": [
-      "There are {a} equal groups of {b} fabric swatches.",
-      "{a} × {b} = {answer} fabric swatches."
-    ],
-    "use": "Track how many swatches you have for a collection."
-  },
-  {
-    "id": "fashion-02",
-    "interest": "fashion",
-    "rule": "remaining",
-    "unit": "fabric swatches",
-    "prompt": "There are {a} sample packs with {b} fabric swatches each. After {c} fabric swatches are used, how many are left?",
-    "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
-    ],
-    "solution": [
-      "{a} × {b} = {total} fabric swatches to begin with.",
-      "{total} − {c} = {answer} fabric swatches remaining."
-    ],
-    "use": "Track how many swatches you have for a collection."
-  },
-  {
-    "id": "fashion-03",
-    "interest": "fashion",
-    "rule": "percentage",
-    "unit": "fabric swatches",
-    "prompt": "There are {a} sample packs with {b} fabric swatches each. You have used {c}% of the total. How many fabric swatches have you used?",
-    "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
-    ],
-    "solution": [
-      "{a} × {b} = {total} fabric swatches in total.",
-      "{total} × {c} ÷ 100 = {answer} fabric swatches used."
-    ],
-    "use": "Track how many swatches you have for a collection."
-  },
-  {
-    "id": "technology-01",
-    "interest": "technology",
-    "rule": "multiply",
-    "unit": "megabytes",
-    "prompt": "There are {a} download batches with {b} megabytes each. How many megabytes are there altogether?",
-    "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
-    ],
-    "solution": [
-      "There are {a} equal groups of {b} megabytes.",
-      "{a} × {b} = {answer} megabytes."
-    ],
-    "use": "Budget storage for a series of downloads."
-  },
-  {
-    "id": "technology-02",
-    "interest": "technology",
-    "rule": "remaining",
-    "unit": "megabytes",
-    "prompt": "There are {a} download batches with {b} megabytes each. After {c} megabytes are used, how many are left?",
-    "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
-    ],
-    "solution": [
-      "{a} × {b} = {total} megabytes to begin with.",
-      "{total} − {c} = {answer} megabytes remaining."
-    ],
-    "use": "Budget storage for a series of downloads."
-  },
-  {
-    "id": "technology-03",
-    "interest": "technology",
-    "rule": "percentage",
-    "unit": "megabytes",
-    "prompt": "There are {a} download batches with {b} megabytes each. You have used {c}% of the total. How many megabytes have you used?",
-    "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
-    ],
-    "solution": [
-      "{a} × {b} = {total} megabytes in total.",
-      "{total} × {c} ÷ 100 = {answer} megabytes used."
-    ],
-    "use": "Budget storage for a series of downloads."
-  },
-  {
-    "id": "shopping-01",
+    "id": "SF1",
     "interest": "shopping",
-    "rule": "multiply",
-    "unit": "items",
-    "prompt": "There are {a} delivery boxes with {b} items each. How many items are there altogether?",
+    "prompt": "NovaKicks trainers cost £{a}. This weekend there is {b}% off. What is the sale price?",
+    "ranges": {
+      "a": [
+        40,
+        50,
+        60,
+        70,
+        80,
+        90,
+        100,
+        110,
+        120
+      ],
+      "b": [
+        10,
+        20,
+        30,
+        40,
+        50
+      ]
+    },
+    "formula": "a*(1-b/100)",
     "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
+      "Start with 10%. How do you find 10% of any amount?",
+      "Work out how many lots of 10% you need for {b}%, then find the discount in pounds.",
+      "Take the discount away from the original price."
     ],
     "solution": [
-      "There are {a} equal groups of {b} items.",
-      "{a} × {b} = {answer} items."
+      "10% of £{a} is £{a/10:m}.",
+      "{b}% is {b/10} lots of 10%, so the discount is {b/10} × £{a/10:m} = £{a*b/100:m}.",
+      "Sale price = £{a} − £{a*b/100:m} = £{answer:m}."
     ],
-    "use": "Check stock across a bulk delivery."
+    "use": "Checking whether a sale is really a bargain, and working out the final price before you reach the till.",
+    "unit": "pounds, up to 2 decimal places",
+    "format": "decimal",
+    "places": 2
   },
   {
-    "id": "shopping-02",
+    "id": "SF2",
     "interest": "shopping",
-    "rule": "remaining",
-    "unit": "items",
-    "prompt": "There are {a} delivery boxes with {b} items each. After {c} items are used, how many are left?",
+    "prompt": "A shop sells socks at 3 pairs for £{a}. How much would {b} pairs cost at the same price?",
+    "ranges": {
+      "a": [
+        6,
+        12,
+        18,
+        24,
+        30
+      ],
+      "b": [
+        6,
+        9,
+        12,
+        15,
+        18
+      ]
+    },
+    "formula": "a/3*b",
     "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
+      "How much does 1 pair cost?",
+      "Divide the price for 3 pairs by 3.",
+      "Multiply the price of one pair by {b}."
     ],
     "solution": [
-      "{a} × {b} = {total} items to begin with.",
-      "{total} − {c} = {answer} items remaining."
+      "One pair costs £{a} ÷ 3 = £{a/3:m}.",
+      "{b} pairs cost {b} × £{a/3:m} = £{answer:m}."
     ],
-    "use": "Check stock across a bulk delivery."
+    "use": "Comparing multi-buy deals so you know which one is better value.",
+    "unit": "pounds, whole number",
+    "format": "decimal",
+    "places": 0
   },
   {
-    "id": "shopping-03",
+    "id": "SF3",
     "interest": "shopping",
-    "rule": "percentage",
-    "unit": "items",
-    "prompt": "There are {a} delivery boxes with {b} items each. You have used {c}% of the total. How many items have you used?",
+    "prompt": "You have £{a} saved up. You buy a game for £{b} and a drink for £{c}. How much money do you have left?",
+    "ranges": {
+      "a": [
+        50,
+        55,
+        60,
+        65,
+        70,
+        75,
+        80,
+        85,
+        90,
+        95,
+        100
+      ],
+      "b": [
+        20,
+        25,
+        30,
+        35,
+        40
+      ],
+      "c": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "formula": "a-b-c",
     "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
+      "Work out how much you spend altogether.",
+      "Add the cost of the game and the drink.",
+      "Subtract the total spent from the money you started with."
     ],
     "solution": [
-      "{a} × {b} = {total} items in total.",
-      "{total} × {c} ÷ 100 = {answer} items used."
+      "Total spent = £{b} + £{c} = £{b+c}.",
+      "Money left = £{a} − £{b+c} = £{answer}."
     ],
-    "use": "Check stock across a bulk delivery."
+    "use": "Budgeting: knowing what is left before you spend it.",
+    "unit": "pounds, whole number",
+    "format": "decimal",
+    "places": 0
   },
   {
-    "id": "pop-culture-01",
+    "id": "SF4",
+    "interest": "shopping",
+    "prompt": "A jacket is in a sale with {b}% off. It now costs £{a}. What was the original price?",
+    "ranges": {
+      "a": [
+        24,
+        36,
+        48,
+        60,
+        72,
+        84,
+        96,
+        108,
+        120
+      ],
+      "b": [
+        20,
+        25,
+        50
+      ]
+    },
+    "formula": "a/(1-b/100)",
+    "hints": [
+      "If {b}% is taken off, what percentage of the original price do you pay?",
+      "£{a} is {100-b}% of the original price. Find 1% first.",
+      "Multiply 1% by 100 to get the original price."
+    ],
+    "solution": [
+      "You pay {100-b}% of the original price.",
+      "{100-b}% = £{a}, so 1% = £{a} ÷ {100-b} = £{a/(100-b):m}.",
+      "Original price = 100 × £{a/(100-b):m} = £{answer:m}."
+    ],
+    "use": "Working out what something cost before a sale, or checking whether a discount is genuine.",
+    "unit": "pounds, up to 2 decimal places",
+    "format": "decimal",
+    "places": 2
+  },
+  {
+    "id": "SF5",
+    "interest": "shopping",
+    "prompt": "A box for NovaKicks trainers is a cuboid {a} cm long, {b} cm wide and {c} cm high. How much wrapping paper is needed to cover the whole box? Ignore overlaps.",
+    "ranges": {
+      "a": [
+        30,
+        35,
+        40
+      ],
+      "b": [
+        15,
+        20,
+        25
+      ],
+      "c": [
+        10,
+        15
+      ]
+    },
+    "formula": "2*(a*b+b*c+a*c)",
+    "hints": [
+      "A cuboid has 6 faces. Which faces are the same size?",
+      "Find the area of the three different faces: length × width, width × height and length × height.",
+      "Add the three areas together and double it, because each face appears twice."
+    ],
+    "solution": [
+      "Top and bottom: {a} × {b} = {a*b} cm² each.",
+      "Front and back: {a} × {c} = {a*c} cm² each.",
+      "Two sides: {b} × {c} = {b*c} cm² each.",
+      "Total = 2 × ({a*b} + {a*c} + {b*c}) = {answer} cm²."
+    ],
+    "use": "Packaging, wrapping gifts and working out how much material covers a 3D shape.",
+    "unit": "square centimetres, whole number",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "SF6",
+    "interest": "shopping",
+    "prompt": "Trainers you want cost £{c}. You have £{b} saved and add £{a} every week. What is the smallest whole number of weeks you need to save before you can buy them?",
+    "ranges": {
+      "a": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "b": [
+        5,
+        10,
+        15,
+        20
+      ],
+      "c": [
+        60,
+        70,
+        80,
+        90,
+        100,
+        110,
+        120
+      ]
+    },
+    "formula": "ROUNDUP((c-b)/a,0)",
+    "hints": [
+      "Write an expression for the money you have after w weeks: {b} + {a}w.",
+      "You need this to be at least £{c}. Write that as an inequality.",
+      "Solve it, then round up to a whole number of weeks."
+    ],
+    "solution": [
+      "Money after w weeks = {b} + {a}w.",
+      "You need {b} + {a}w ≥ {c}, so {a}w ≥ {c-b}.",
+      "w ≥ {c-b} ÷ {a} = {(c-b)/a}, so round up to the next whole week.",
+      "Answer: {answer} weeks."
+    ],
+    "use": "Planning savings goals and knowing how long they will take.",
+    "unit": "whole number of weeks",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "SF7",
+    "interest": "shopping",
+    "prompt": "You put £{a} into a savings account that pays {b}% interest a year. The interest is added at the end of each year. How much is in the account after {c} years? Give your answer to the nearest penny.",
+    "ranges": {
+      "a": [
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900,
+        1000
+      ],
+      "b": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "c": [
+        2,
+        3,
+        4
+      ]
+    },
+    "formula": "ROUND(a*(1+b/100)^c,2)",
+    "hints": [
+      "Each year the balance is multiplied by the same number. What number is that for {b}% growth?",
+      "The multiplier is {1+b/100}. You apply it once for every year.",
+      "Work out {a} × {1+b/100} to the power of {c}, then round to 2 decimal places."
+    ],
+    "solution": [
+      "Multiplier = 1 + {b} ÷ 100 = {1+b/100}.",
+      "After {c} years: £{a} × {1+b/100}^{c}.",
+      "= £{answer:m} to the nearest penny."
+    ],
+    "use": "Understanding how savings, loans and credit cards grow over time through compound interest.",
+    "unit": "pounds, 2 decimal places",
+    "format": "decimal",
+    "places": 2
+  },
+  {
+    "id": "SF8",
+    "interest": "shopping",
+    "prompt": "Phone deal A costs £{a} a month with nothing to pay upfront. Phone deal B costs £{b} upfront and then £{c} a month. After how many whole months does deal A become more expensive than deal B?",
+    "ranges": {
+      "a": [
+        25,
+        30,
+        35,
+        40
+      ],
+      "b": [
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90,
+        100
+      ],
+      "c": [
+        10,
+        15,
+        20
+      ]
+    },
+    "formula": "ROUNDDOWN(b/(a-c),0)+1",
+    "hints": [
+      "Write the total cost of each deal after m months as an expression.",
+      "Deal A: {a}m. Deal B: {b} + {c}m. You want {a}m to be bigger than {b} + {c}m.",
+      "Solve the inequality. If the answer is a whole number, you need the next whole month."
+    ],
+    "solution": [
+      "Deal A after m months: {a}m.",
+      "Deal B after m months: {b} + {c}m.",
+      "{a}m > {b} + {c}m, so {a-c}m > {b}.",
+      "m > {b} ÷ {a-c} = {b/(a-c)}, so the smallest whole number of months is {answer}."
+    ],
+    "use": "Choosing between phone, streaming or gym deals by finding the point where one gets more expensive.",
+    "unit": "whole number of months",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "PC1",
     "interest": "pop-culture",
-    "rule": "multiply",
-    "unit": "stickers",
-    "prompt": "There are {a} collector packs with {b} stickers each. How many stickers are there altogether?",
+    "prompt": "A mystery box at FanCon holds {b} collectable figures, and {a} of them are rare. If you pick one without looking, what is the probability it is rare? Give your answer as a percentage.",
+    "ranges": {
+      "a": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "b": [
+        10,
+        20,
+        25,
+        50
+      ]
+    },
+    "formula": "a/b*100",
     "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
+      "Probability = number of rare figures ÷ total number of figures.",
+      "Write it as a fraction: {a}/{b}.",
+      "To turn a fraction into a percentage, multiply by 100."
     ],
     "solution": [
-      "There are {a} equal groups of {b} stickers.",
-      "{a} × {b} = {answer} stickers."
+      "P(rare) = {a}/{b}.",
+      "As a percentage = {a}/{b} × 100 = {answer}%."
     ],
-    "use": "Track the size of a sticker collection."
+    "use": "Knowing your real chances in mystery boxes and prize draws.",
+    "unit": "percentage, whole number",
+    "format": "decimal",
+    "places": 0
   },
   {
-    "id": "pop-culture-02",
+    "id": "PC2",
     "interest": "pop-culture",
-    "rule": "remaining",
-    "unit": "stickers",
-    "prompt": "There are {a} collector packs with {b} stickers each. After {c} stickers are used, how many are left?",
+    "prompt": "A fantasy film series has {a} films. Each film is {b} minutes long. How many hours would a full marathon of the series take?",
+    "ranges": {
+      "a": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "b": [
+        90,
+        120,
+        150
+      ]
+    },
+    "formula": "a*b/60",
     "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
+      "First find the total number of minutes.",
+      "Multiply the number of films by the length of each film.",
+      "Divide the total minutes by 60 to change it into hours."
     ],
     "solution": [
-      "{a} × {b} = {total} stickers to begin with.",
-      "{total} − {c} = {answer} stickers remaining."
+      "Total minutes = {a} × {b} = {a*b}.",
+      "Hours = {a*b} ÷ 60 = {answer}."
     ],
-    "use": "Track the size of a sticker collection."
+    "use": "Planning your time for movie nights, binge-watching and travel.",
+    "unit": "hours, up to 1 decimal place",
+    "format": "decimal",
+    "places": 1
   },
   {
-    "id": "pop-culture-03",
+    "id": "PC3",
     "interest": "pop-culture",
-    "rule": "percentage",
-    "unit": "stickers",
-    "prompt": "There are {a} collector packs with {b} stickers each. You have used {c}% of the total. How many stickers have you used?",
+    "prompt": "A fan club has {a} members. They are split between Team Nova and Team Orbit in the ratio 3 : 2. How many members are in Team Nova?",
+    "ranges": {
+      "a": [
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        55,
+        60,
+        65,
+        70,
+        75,
+        80,
+        85,
+        90,
+        95,
+        100
+      ]
+    },
+    "formula": "a/5*3",
     "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
+      "The ratio 3 : 2 has 3 + 2 parts altogether. How many parts is that?",
+      "Divide the total number of members by the number of parts to find one part.",
+      "Team Nova gets 3 parts. Multiply one part by 3."
     ],
     "solution": [
-      "{a} × {b} = {total} stickers in total.",
-      "{total} × {c} ÷ 100 = {answer} stickers used."
+      "Total parts = 3 + 2 = 5.",
+      "One part = {a} ÷ 5 = {a/5}.",
+      "Team Nova = 3 × {a/5} = {answer}."
     ],
-    "use": "Track the size of a sticker collection."
+    "use": "Sharing things fairly, like splitting costs or teams in a set ratio.",
+    "unit": "whole number",
+    "format": "decimal",
+    "places": 0
   },
   {
-    "id": "beauty-01",
-    "interest": "beauty",
-    "rule": "multiply",
-    "unit": "millilitres",
-    "prompt": "There are {a} product bottles with {b} millilitres each. How many millilitres are there altogether?",
+    "id": "PC4",
+    "interest": "pop-culture",
+    "prompt": "Zara's streaming channel gained a mean of {b} new followers a day over {a} days. On the next day it gains {c} followers. What is the new mean number of followers gained per day?",
+    "ranges": {
+      "a": [
+        3,
+        4,
+        7,
+        9
+      ],
+      "b": [
+        20,
+        30,
+        40,
+        50,
+        60
+      ],
+      "c": [
+        10,
+        20,
+        30,
+        40,
+        50,
+        60,
+        70,
+        80,
+        90,
+        100,
+        110,
+        120
+      ]
+    },
+    "formula": "(a*b+c)/(a+1)",
     "hints": [
-      "Identify the number of groups and the amount in each group.",
-      "Each of the {a} groups contributes the same amount.",
-      "Multiply {a} by {b}."
+      "Mean = total ÷ number of days. Use the first mean to find the total so far.",
+      "Total so far = {a} × {b}. Then add the new day.",
+      "Divide the new total by {a+1} days."
     ],
     "solution": [
-      "There are {a} equal groups of {b} millilitres.",
-      "{a} × {b} = {answer} millilitres."
+      "Total so far = {a} × {b} = {a*b}.",
+      "New total = {a*b} + {c} = {a*b+c}.",
+      "New mean = {a*b+c} ÷ {a+1} = {answer}."
     ],
-    "use": "Work out how much product is available for a demonstration."
+    "use": "Tracking how your own numbers are changing, like followers, scores or screen time.",
+    "unit": "number, up to 2 decimal places",
+    "format": "decimal",
+    "places": 2
   },
   {
-    "id": "beauty-02",
-    "interest": "beauty",
-    "rule": "remaining",
-    "unit": "millilitres",
-    "prompt": "There are {a} product bottles with {b} millilitres each. After {c} millilitres are used, how many are left?",
+    "id": "PC5",
+    "interest": "pop-culture",
+    "prompt": "A poster for the LunaVerse film premiere is a rectangle {a} cm by {b} cm. The cinema enlarges it by a scale factor of {c} for a billboard. What is the area of the billboard version?",
+    "ranges": {
+      "a": [
+        20,
+        30,
+        40
+      ],
+      "b": [
+        30,
+        40,
+        50,
+        60
+      ],
+      "c": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "formula": "(a*c)*(b*c)",
     "hints": [
-      "Find the starting total before subtracting.",
-      "Multiply {a} by {b} to get the starting total.",
-      "Take {c} away from the starting total."
+      "Enlarging by scale factor {c} multiplies every length by {c}.",
+      "Find the new length and the new width.",
+      "Multiply the new length by the new width."
     ],
     "solution": [
-      "{a} × {b} = {total} millilitres to begin with.",
-      "{total} − {c} = {answer} millilitres remaining."
+      "New length = {a} × {c} = {a*c} cm.",
+      "New width = {b} × {c} = {b*c} cm.",
+      "Area = {a*c} × {b*c} = {answer} cm²."
     ],
-    "use": "Work out how much product is available for a demonstration."
+    "use": "Scaling posters, models and maps up or down, and seeing how area grows faster than length.",
+    "unit": "square centimetres, whole number",
+    "format": "decimal",
+    "places": 0
   },
   {
-    "id": "beauty-03",
-    "interest": "beauty",
-    "rule": "percentage",
-    "unit": "millilitres",
-    "prompt": "There are {a} product bottles with {b} millilitres each. You have used {c}% of the total. How many millilitres have you used?",
+    "id": "PC6",
+    "interest": "pop-culture",
+    "prompt": "At a fan stall, a t-shirt costs £{a} and every poster costs the same price. Zara buys 1 t-shirt and 5 posters and pays £{b} in total. How much does one poster cost?",
+    "ranges": {
+      "a": [
+        10,
+        15,
+        20
+      ],
+      "b": [
+        35,
+        40,
+        45,
+        50,
+        55,
+        60,
+        65,
+        70,
+        75,
+        80,
+        85,
+        90,
+        95
+      ]
+    },
+    "formula": "(b-a)/5",
     "hints": [
-      "Find the total amount before applying the percentage.",
-      "Multiply {a} by {b} to find the total.",
-      "Multiply the total by {c} and divide by 100."
+      "Let p be the price of one poster. Write an equation for the total cost.",
+      "{a} + 5p = {b}. Subtract {a} from both sides.",
+      "Divide both sides by 5."
     ],
     "solution": [
-      "{a} × {b} = {total} millilitres in total.",
-      "{total} × {c} ÷ 100 = {answer} millilitres used."
+      "{a} + 5p = {b}.",
+      "5p = {b} − {a} = {b-a}.",
+      "p = {b-a} ÷ 5 = {answer}."
     ],
-    "use": "Work out how much product is available for a demonstration."
+    "use": "Working out unknown prices from a total, like splitting a bill or checking a receipt.",
+    "unit": "pounds, whole number",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "PC7",
+    "interest": "pop-culture",
+    "prompt": "A mystery bag holds {b} badges, and {a} of them are gold. Two badges are taken out without looking and without putting the first one back. What is the probability that both are gold? Give your answer as a fraction.",
+    "ranges": {
+      "a": [
+        2,
+        3,
+        4
+      ],
+      "b": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "formula": "a*(a-1)/(b*(b-1))",
+    "hints": [
+      "Find the probability that the first badge is gold: {a}/{b}.",
+      "One gold badge is now gone, and so is one badge from the bag. What is the probability that the second badge is gold?",
+      "Multiply the two probabilities together."
+    ],
+    "solution": [
+      "P(first gold) = {a}/{b}.",
+      "P(second gold) = {a-1}/{b-1}.",
+      "P(both gold) = {a}/{b} × {a-1}/{b-1} = {a*(a-1)}/{b*(b-1)}, which simplifies to {answer}."
+    ],
+    "use": "Understanding your chances in raffles, card pulls and games where items are not replaced.",
+    "unit": "fraction (accept any equivalent fraction)",
+    "format": "fraction",
+    "places": null
+  },
+  {
+    "id": "PC8",
+    "interest": "pop-culture",
+    "prompt": "It takes {a} volunteers {b} hours to set up a fan convention hall. How many hours would it take {c} volunteers working at the same rate?",
+    "ranges": {
+      "a": [
+        6,
+        8,
+        10,
+        12
+      ],
+      "b": [
+        12,
+        24,
+        36
+      ],
+      "c": [
+        3,
+        4,
+        6,
+        12
+      ]
+    },
+    "formula": "a*b/c",
+    "hints": [
+      "More people means less time. This is inverse proportion.",
+      "Find the total amount of work in volunteer-hours: {a} × {b}.",
+      "Divide the total volunteer-hours by {c} volunteers."
+    ],
+    "solution": [
+      "Total work = {a} × {b} = {a*b} volunteer-hours.",
+      "Time for {c} volunteers = {a*b} ÷ {c} = {answer} hours."
+    ],
+    "use": "Planning jobs and events: how many people you need to finish by a deadline.",
+    "unit": "hours, whole number",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "MS1",
+    "interest": "music",
+    "prompt": "Your playlist has {a} songs that last {b} minutes each. You listen for {c} minutes on the bus. How many minutes of the playlist are left?",
+    "ranges": {
+      "a": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "b": [
+        3,
+        4
+      ],
+      "c": [
+        10,
+        15,
+        20,
+        25,
+        30
+      ]
+    },
+    "formula": "a*b-c",
+    "hints": [
+      "Find the total length of the playlist first.",
+      "Multiply the number of songs by the length of each song.",
+      "Subtract the minutes you have already listened to."
+    ],
+    "solution": [
+      "Total length = {a} × {b} = {a*b} minutes.",
+      "Left = {a*b} − {c} = {answer} minutes."
+    ],
+    "use": "Managing your time, like fitting music, homework or a journey into the minutes you have.",
+    "unit": "minutes, whole number",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "MS2",
+    "interest": "music",
+    "prompt": "A streaming service pays an artist £{a} for every 1,000 streams. How much does the artist earn from {b} streams? (Illustrative rate, not a real one.)",
+    "ranges": {
+      "a": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "b": [
+        10000,
+        20000,
+        30000,
+        40000,
+        50000,
+        60000,
+        70000,
+        80000,
+        90000,
+        100000
+      ]
+    },
+    "formula": "a*b/1000",
+    "hints": [
+      "How many lots of 1,000 are there in {b}?",
+      "Divide {b} by 1,000.",
+      "Multiply the number of lots by £{a}."
+    ],
+    "solution": [
+      "{b} ÷ 1,000 = {b/1000} lots of 1,000 streams.",
+      "Earnings = {b/1000} × £{a} = £{answer}."
+    ],
+    "use": "Understanding how artists and creators get paid, and what a lot of streams is worth.",
+    "unit": "pounds, whole number",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "MS3",
+    "interest": "music",
+    "prompt": "These are the numbers of plays of five songs on your playlist this week: {a}, {b}, {c}, {d}, {e}. What is the range of the number of plays?",
+    "ranges": {
+      "a": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "b": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "c": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "d": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "e": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ]
+    },
+    "formula": "MAX(a,b,c,d,e)-MIN(a,b,c,d,e)",
+    "hints": [
+      "The range tells you how spread out the numbers are.",
+      "Find the biggest and the smallest number.",
+      "Subtract the smallest from the biggest."
+    ],
+    "solution": [
+      "Biggest = {MAX(a,b,c,d,e)}.",
+      "Smallest = {MIN(a,b,c,d,e)}.",
+      "Range = {MAX(a,b,c,d,e)} − {MIN(a,b,c,d,e)} = {answer}."
+    ],
+    "use": "Seeing how much a set of numbers varies, like scores, prices or chart positions.",
+    "unit": "whole number",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "MS4",
+    "interest": "music",
+    "prompt": "A music app costs £{a} a month. With a student discount of {b}% you pay less. How much will you pay for a full year (12 months) with the discount?",
+    "ranges": {
+      "a": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "b": [
+        20,
+        25,
+        50
+      ]
+    },
+    "formula": "a*12*(1-b/100)",
+    "hints": [
+      "Find the full price for the year first, then take off the discount.",
+      "A {b}% discount means you pay {100-b}% of the price.",
+      "Multiply the yearly price by {(100-b)/100}."
+    ],
+    "solution": [
+      "Full price for 12 months = {a} × 12 = £{a*12}.",
+      "You pay {100-b}%, so multiply by {(100-b)/100}.",
+      "£{a*12} × {(100-b)/100} = £{answer:m}."
+    ],
+    "use": "Spotting how much a student or family deal really saves you over a year.",
+    "unit": "pounds, up to 2 decimal places",
+    "format": "decimal",
+    "places": 2
+  },
+  {
+    "id": "MS5",
+    "interest": "music",
+    "prompt": "A DJ charges a £{a} set-up fee plus £20 for each hour of playing. A school disco costs £{b} in total. For how many hours did the DJ play?",
+    "ranges": {
+      "a": [
+        40,
+        60,
+        80
+      ],
+      "b": [
+        120,
+        140,
+        160,
+        180,
+        200,
+        220,
+        240,
+        260,
+        280
+      ]
+    },
+    "formula": "(b-a)/20",
+    "hints": [
+      "Let h be the number of hours. Write an equation for the total cost.",
+      "{a} + 20h = {b}. Subtract the set-up fee from both sides.",
+      "Divide what is left by 20."
+    ],
+    "solution": [
+      "{a} + 20h = {b}.",
+      "20h = {b} − {a} = {b-a}.",
+      "h = {b-a} ÷ 20 = {answer}."
+    ],
+    "use": "Working backwards from a total cost to find how long or how many, like quotes for events and services.",
+    "unit": "whole number of hours",
+    "format": "decimal",
+    "places": 0
+  },
+  {
+    "id": "MS6",
+    "interest": "music",
+    "prompt": "A festival has a circular stage with a diameter of {a} m. What is the area of the stage? Give your answer to 1 decimal place.",
+    "ranges": {
+      "a": [
+        6,
+        8,
+        10,
+        12,
+        14
+      ]
+    },
+    "formula": "ROUND(PI()*(a/2)^2,1)",
+    "hints": [
+      "The area of a circle is π × r². What is the radius if the diameter is {a} m?",
+      "The radius is half the diameter: {a/2} m.",
+      "Square the radius, then multiply by π."
+    ],
+    "solution": [
+      "Radius = {a} ÷ 2 = {a/2} m.",
+      "Area = π × {a/2}² = π × {(a/2)^2}.",
+      "= {answer} m² to 1 decimal place."
+    ],
+    "use": "Measuring round shapes like stages, speakers, pizzas and wheels.",
+    "unit": "square metres, 1 decimal place",
+    "format": "decimal",
+    "places": 1
+  },
+  {
+    "id": "MS7",
+    "interest": "music",
+    "prompt": "A song has been streamed {a} × 10^{b} times. Each stream earns £{c} × 10^-3. How much has the song earned in total? Give your answer in standard form.",
+    "ranges": {
+      "a": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "b": [
+        6,
+        7,
+        8
+      ],
+      "c": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "formula": "a*c*10^(b-3)",
+    "hints": [
+      "Multiply the numbers at the front and the powers of 10 separately.",
+      "{a} × {c} = {a*c}. For the powers: 10^{b} × 10^-3 = 10^{b-3}.",
+      "If the front number is 10 or more, move the decimal point so it is between 1 and 10, and change the power to match."
+    ],
+    "solution": [
+      "{a} × {c} = {a*c}.",
+      "10^{b} × 10^-3 = 10^{b-3}.",
+      "So the total is {a*c} × 10^{b-3}.",
+      "In standard form: £{sf}."
+    ],
+    "use": "Making sense of huge numbers like streams, views and followers, and what they are worth.",
+    "unit": "standard form (accept equivalent)",
+    "format": "standard",
+    "places": null
+  },
+  {
+    "id": "MS8",
+    "interest": "music",
+    "prompt": "A band's channel has {a} subscribers. After a bad week it loses {b}% of them. After a viral song it then gains {c}% on its new total. How many subscribers does it have now?",
+    "ranges": {
+      "a": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000
+      ],
+      "b": [
+        10,
+        20,
+        30,
+        40,
+        50
+      ],
+      "c": [
+        10,
+        20,
+        30,
+        40
+      ]
+    },
+    "formula": "a*(1-b/100)*(1+c/100)",
+    "hints": [
+      "Use multipliers. A loss of {b}% means multiplying by {1-b/100}.",
+      "A gain of {c}% means multiplying by {1+c/100}.",
+      "Multiply the starting number by both multipliers."
+    ],
+    "solution": [
+      "After the loss: {a} × {1-b/100} = {a*(1-b/100)}.",
+      "After the gain: {a*(1-b/100)} × {1+c/100} = {answer}."
+    ],
+    "use": "Understanding how percentage changes stack up, in followers, prices and scores.",
+    "unit": "whole number",
+    "format": "decimal",
+    "places": 0
   }
 ]

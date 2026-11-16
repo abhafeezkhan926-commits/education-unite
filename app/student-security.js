@@ -1,14 +1,17 @@
 import { argon2, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
 import { promisify } from 'node:util';
+import { isLocalPreview } from './runtime-config.mjs';
 
 const derive = promisify(argon2);
-const preview = process.env.EDUCATION_UNITE_PREVIEW === '1' && !process.env.DATABASE_URL;
+const preview = isLocalPreview();
 const previewKey = globalThis.educationUnitePreviewKey ??= randomBytes(32);
 const adjectives = ['Bright', 'Calm', 'Clever', 'Kind', 'Lucky', 'Quick', 'Swift', 'Wise'];
 const animals = ['Badger', 'Falcon', 'Finch', 'Fox', 'Otter', 'Owl', 'Panda', 'Robin'];
 export const sessionName = 'eu_student';
 export const joinName = 'eu_join';
+export const studentDeviceName = 'eu_student_device';
+export const studentDeviceAge = 30 * 24 * 60 * 60;
 export const sessionAge = 7 * 24 * 60 * 60;
 export const joinAge = 10 * 60;
 
@@ -26,10 +29,34 @@ export function cookieOptions(maxAge) {
   return { httpOnly: true, sameSite: 'lax', secure: !preview, path: '/', maxAge };
 }
 
-export function requestSource(headers) {
+export function makeStudentDevice(username, passwordHash, id = randomBytes(16).toString('hex')) {
+  const value = `${id}.${Date.now() + studentDeviceAge * 1000}`;
+  return `${value}.${digest('student-device', `${username}:${passwordHash}:${value}`)}`;
+}
+
+export function readStudentDevice(cookie, username, passwordHash) {
+  if (!passwordHash || !cookie || !/^[a-f0-9]{32}\.\d{13}\.[a-f0-9]{64}$/.test(cookie)) return null;
+  const [id, expiry, signature] = cookie.split('.');
+  if (Number(expiry) <= Date.now()) return null;
+  const expected = digest('student-device', `${username}:${passwordHash}:${id}.${expiry}`);
+  return timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex')) ? id : null;
+}
+
+export function requestSource(headers, { requireTrusted = false } = {}) {
   // Vercel sets this header at its edge. Other deployments share a fallback bucket.
   const address = process.env.VERCEL ? headers.get('x-vercel-forwarded-for')?.trim() : '';
-  return isIP(address ?? '') ? address : 'local-or-unavailable';
+  if (isIP(address ?? '')) return address;
+  if (requireTrusted && (process.env.VERCEL || !preview)) return null;
+  return 'local-or-unavailable';
+}
+
+export async function isRateLimited(db, action, bucket, limit) {
+  const { rows: [row] } = await db.query(
+    `select attempt_count from education_unite.rate_limit_windows
+     where action = $1 and subject_digest = $2 and expires_at > now()`,
+    [action, digest(action, bucket)],
+  );
+  return (row?.attempt_count ?? 0) >= limit;
 }
 
 export async function consumeAttempt(db, action, bucket, limit) {
