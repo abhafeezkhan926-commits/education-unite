@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { updatePractice } from '../practice-actions';
 import { currentPractice } from '../practice-state';
 import TypingText from './typing-text';
+import PracticeSubmitButton from './submit-button';
 import { typingDuration } from './typing-duration';
 
 function WorkedSolution({ answer, question }) {
@@ -27,7 +28,7 @@ function WorkedSolution({ answer, question }) {
 
 function PracticeForm({ practice, operation, children }) {
   return (
-    <form className="student-form" action={updatePractice}>
+    <form className="student-form" action={updatePractice} noValidate={operation === 'hint'}>
       <input type="hidden" name="practice" value={practice.id} />
       <input type="hidden" name="position" value={practice.state.position} />
       <input type="hidden" name="operation" value={operation} />
@@ -75,7 +76,9 @@ export default async function Practice({ searchParams }) {
             {state.hints < question.hints.length && (
               <PracticeForm practice={practice} operation="hint">
                 <input type="hidden" name="hints" value={state.hints} />
-                <button className="sign-in-button">Show hint {state.hints + 1} of {question.hints.length}</button>
+                <PracticeSubmitButton className="sign-in-button" formNoValidate pendingLabel="Loading hint…">
+                  Show hint {state.hints + 1} of {question.hints.length}
+                </PracticeSubmitButton>
               </PracticeForm>
             )}
             <PracticeForm practice={practice} operation="answer">
@@ -83,7 +86,7 @@ export default async function Practice({ searchParams }) {
                 <input name="answer" inputMode="decimal" autoComplete="off" required maxLength={20} />
               </label>
               {invalidNumber && <p className="form-error" role="alert">Enter your answer as a number.</p>}
-              <button>Check answer</button>
+              <PracticeSubmitButton pendingLabel="Checking answer…">Check answer</PracticeSubmitButton>
             </PracticeForm>
           </>
         )}
