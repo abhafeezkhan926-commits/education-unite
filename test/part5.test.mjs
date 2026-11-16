@@ -149,7 +149,8 @@ async function startPreview(t, password, { emailCode = false } = {}) {
     const stopped = child.kill();
     const [code, signal] = await closed;
     if (/fatal|out of memory/i.test(output)) t.diagnostic(output);
-    assert.ok(stopped && (code === 0 || signal === 'SIGTERM'), 'Preview exited unexpectedly:\n' + output);
+    // Next handles SIGTERM and exits with 128 + 15 on Unix.
+    assert.ok(stopped && (code === 0 || code === 143 || signal === 'SIGTERM'), 'Preview exited unexpectedly:\n' + output);
   });
   for (let attempt = 0; attempt < 100 && child.exitCode === null; attempt++) {
     const response = await fetch(origin).catch(() => null);
