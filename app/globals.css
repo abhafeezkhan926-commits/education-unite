@@ -249,6 +249,15 @@ button:disabled {
   outline-offset: 3px;
 }
 
+:is(input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea):enabled:hover {
+  border-color: var(--theme-primary);
+}
+
+:is(input:not([type='checkbox'], [type='radio'], [type='hidden']), select, textarea):focus {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: -2px;
+}
+
 .interest-options {
   display: grid;
   gap: 0.5rem;
@@ -455,9 +464,10 @@ input, select {
 button:not(:disabled, .text-button, .password-field-control button, .admin-topbar button, .admin-drawer-content > button):hover,
 .student-button:not(.sign-in-button):hover {
   background: var(--theme-primary-hover);
+  color: var(--theme-white);
 }
 
-.sign-in-button:hover {
+a.sign-in-button:hover {
   background: var(--theme-surface);
 }
 
