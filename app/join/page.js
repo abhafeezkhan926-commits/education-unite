@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Brand from '../brand';
 import { cookies } from 'next/headers';
 import { checkJoinCode, createStudent, restartJoin } from '../student-actions';
 import StudentForm from '../student-forms';
@@ -9,7 +10,7 @@ export default async function Join() {
   const ticket = readJoinTicket((await cookies()).get(joinName)?.value);
   return (
     <main className="student-card">
-      <Link href="/">EducationUnite</Link>
+      <Brand />
       <h1>{ticket ? 'Create your account' : 'Join with a class code'}</h1>
       {ticket ? (
         <>

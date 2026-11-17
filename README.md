@@ -26,11 +26,11 @@ Enable `pg_cron` on the hosted database before applying `20261116000005_expired_
 
 ## Owner admin
 
-For a local preview, open `/admin/login` and use `owner@example.test` and the password configured as `EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD` in `.env.local`. If you leave it unset, the preview command generates and prints a temporary password. The test owner is available only in loopback preview mode with the in-memory database.
+For a local preview, open `/login` and use `owner@example.test` and the password configured as `EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD` in `.env.local`. If you leave it unset, the preview command generates and prints a temporary password. The test owner and six-digit test code (`123456`) are available only in loopback preview mode with the in-memory database. The local preview skips email delivery.
 
 The current Vercel deployment uses email verification codes. Configure the server-only `EDUCATION_UNITE_SUPABASE_URL`, `EDUCATION_UNITE_SUPABASE_KEY` (publishable or legacy anon key), and `EDUCATION_UNITE_OWNER_ID` (the primary admin's Auth user UUID). For email-code mode, apply the admin email challenge migration and set `EDUCATION_UNITE_ADMIN_EMAIL_CODE=1`, `RESEND_API_KEY`, and `EDUCATION_UNITE_ADMIN_EMAIL_FROM`. The configured owner receives the code at their confirmed Supabase email address. The Resend test sender supports its linked inbox.
 
-From `/admin/login`, enter the admin credentials, select **Send email code**, and enter the six-digit code in the same browser. Codes expire after five minutes and can be used once. The admin session lasts 15 minutes. Hosted environments with email-code mode off default to [Supabase TOTP](https://supabase.com/docs/guides/auth/auth-mfa/totp).
+From `/login`, enter the admin email and password, select **Sign in**, and enter the six-digit code in the same browser. The old `/admin/login` address redirects to `/login`. Codes expire after five minutes and can be used once. The admin session lasts 15 minutes. Hosted admin sign-in requires email-code mode.
 
 Generate a code at `/admin/codes`. It works in the student join screen for 168 hours. To reset a student password, use `/admin/password-reset` with the student's username and share the resulting one-time password privately. It expires after 15 minutes and immediately replaces any previous reset credential, disables the old password and revokes all of the student's existing sessions. The student can set a new password from the sign-in screen. If the credential expires, issue a fresh one. The reset flow purges expired reset records when students use the reset form.
 

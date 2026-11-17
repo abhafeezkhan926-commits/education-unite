@@ -4,16 +4,12 @@ import { redirect } from 'next/navigation';
 import { adminTransaction } from './student-db';
 import { cookieOptions, sessionDigest } from './student-security';
 import { isLocalPreview } from './runtime-config.mjs';
-import { verifyOwnerTotp } from './admin-totp.mjs';
 
-const cookieName = 'eu_admin';
+const cookieName = 'eu_admin_session';
+const legacyCookieName = 'eu_admin';
 const sessionAge = 15 * 60;
 function usesHostedAuth() {
   return !isLocalPreview();
-}
-
-export function requiresAdminCode() {
-  return usesHostedAuth() && !usesAdminEmailCode();
 }
 
 export function usesAdminEmailCode() {
@@ -75,14 +71,6 @@ export async function verifiedOwnerEmail(email, password) {
   return identity?.account.email_confirmed_at ? identity.account.email : null;
 }
 
-export async function verifyOwner(email, password, code) {
-  if (!usesHostedAuth()) return verifyPreviewOwner(email, password);
-  if (usesAdminEmailCode()) return false;
-  if (!/^\d{6}$/.test(code)) return false;
-  const identity = await authenticateOwner(email, password);
-  return identity ? verifyOwnerTotp(authRequest, identity, code) : false;
-}
-
 export async function startAdminSession() {
   const token = randomBytes(32).toString('base64url');
   const jar = await cookies();
@@ -95,27 +83,30 @@ export async function startAdminSession() {
       [sessionDigest(token), sessionAge],
     );
   });
-  jar.set(cookieName, token, { ...cookieOptions(sessionAge), path: '/admin' });
+  jar.set(legacyCookieName, '', { ...cookieOptions(0), path: '/admin' });
+  jar.set(cookieName, token, cookieOptions(sessionAge));
 }
 
 export async function withAdmin(work) {
-  const token = (await cookies()).get(cookieName)?.value;
-  if (!token || !/^[\w-]{43}$/.test(token)) redirect('/admin/login');
+  const jar = await cookies();
+  const token = jar.get(cookieName)?.value ?? jar.get(legacyCookieName)?.value;
+  if (!token || !/^[\w-]{43}$/.test(token)) redirect('/login');
   return adminTransaction(async (db) => {
     const result = await db.query(
       'select 1 from education_unite.admin_sessions where token_digest = $1 and expires_at > now()',
       [sessionDigest(token)],
     );
-    if (!result.rows.length) redirect('/admin/login');
+    if (!result.rows.length) redirect('/login');
     return work(db);
   });
 }
 
 export async function endAdminSession() {
   const jar = await cookies();
-  const token = jar.get(cookieName)?.value;
-  if (token) await adminTransaction((db) => db.query(
-    'delete from education_unite.admin_sessions where token_digest = $1', [sessionDigest(token)],
+  const tokens = [jar.get(cookieName)?.value, jar.get(legacyCookieName)?.value].filter(Boolean);
+  if (tokens.length) await adminTransaction((db) => db.query(
+    'delete from education_unite.admin_sessions where token_digest = any($1::text[])', [tokens.map(sessionDigest)],
   ));
-  jar.set(cookieName, '', { ...cookieOptions(0), path: '/admin' });
+  jar.set(legacyCookieName, '', { ...cookieOptions(0), path: '/admin' });
+  jar.set(cookieName, '', cookieOptions(0));
 }

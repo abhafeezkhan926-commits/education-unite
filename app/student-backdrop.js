@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 const celebrationsPlayed = new Set();
-const colors = ['#91ddff', '#c2a4ff', '#ff9bd0', '#fff2b1'];
+const colors = ['#168478', '#509a80', '#b47a32', '#d2a351'];
 const bursts = [
   { x: '15%', y: '30%', delay: 0 },
   { x: '85%', y: '32%', delay: 180 },

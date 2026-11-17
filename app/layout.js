@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata = {
   title: 'EducationUnite',
   description: 'GCSE maths practice built around your interests.',
-  icons: { icon: '/educationunite-mark.png' },
+  icons: { icon: { url: '/educationunite-favicon.svg', type: 'image/svg+xml', sizes: 'any' } },
 };
 
 export default async function RootLayout({ children }) {

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Brand from '../brand';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -54,7 +55,7 @@ export default function AdminNav({ children }) {
         <button className="admin-mobile-toggle" type="button" aria-label="Open sidebar" aria-controls="admin-drawer" aria-expanded={drawerOpen} onClick={() => { drawer.current.showModal(); setDrawerOpen(true); }}>
           <Icon path="M4 6h16M4 12h16M4 18h16" />
         </button>
-        <Link href="/admin">EducationUnite</Link>
+        <Brand href="/admin" />
       </header>
       <aside id="admin-sidebar" className="admin-sidebar"><Navigation /></aside>
       <dialog id="admin-drawer" ref={drawer} className="admin-drawer" aria-label="Admin navigation" onClose={() => setDrawerOpen(false)} onClick={(event) => { if (event.target === event.currentTarget) closeDrawer(); }}>

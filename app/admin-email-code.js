@@ -31,7 +31,7 @@ export async function clearAdminEmailCode() {
       'delete from education_unite.admin_email_challenges where token_digest = $1', [sessionDigest(token)],
     ));
   }
-  (await cookies()).set(cookieName, '', { ...cookieOptions(0), path: '/admin' });
+  (await cookies()).set(cookieName, '', { ...cookieOptions(0), path: '/login' });
 }
 
 export async function sendAdminEmailCode(email) {
@@ -79,7 +79,7 @@ export async function sendAdminEmailCode(email) {
     return false;
   }
 
-  (await cookies()).set(cookieName, token, { ...cookieOptions(maxAge), path: '/admin' });
+  (await cookies()).set(cookieName, token, { ...cookieOptions(maxAge), path: '/login' });
   return true;
 }
 

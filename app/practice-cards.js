@@ -1,107 +1,83 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-const cards = [
-  { title: 'Join with a code', description: 'Use the code from your teacher or parent.', label: 'Join code', values: ['Enter your code'], accent: '#8beef7' },
-  { title: 'Pick your interests', description: 'Choose up to three interests to personalise your questions.', label: 'Example interests', values: ['Shopping', 'Pop culture', 'Music'], accent: '#82b8ff' },
-  { title: 'Try a maths question', description: 'A game costs £40. It’s 25% off. What’s the sale price?', label: 'Your answer', values: ['£ …'], accent: '#b6a0ff' },
-  { title: 'Hints & worked solution', description: 'Find 25% of £40, then subtract the discount.', label: 'Worked example', values: ['£40 ÷ 4 = £10', '£40 − £10 = £30'], accent: '#e8a0ff' },
-  { title: 'Session summary', description: 'See how you did at the end of your practice.', label: 'Example results', values: ['Score 4/5', 'Hints used 2', 'Time 6 min'], accent: '#ff8cdb' },
+const features = [
+  { id: 'join', title: 'Join with a class code', description: 'Enter the code from your teacher or parent, then choose a username and create your password.', icon: 'M15.5 13a4.5 4.5 0 1 0-4-6.5L3 15v4h4v-3h3l2.5-2.5a4.5 4.5 0 0 0 3 .5Z M17 8h.01' },
+  { id: 'hints', title: 'Get a nudge when you need it', description: 'Try up to three hints per question, then read the worked solution to see how each step fits together.', icon: 'M3 14v-2a9 9 0 0 1 18 0v2 M3 14a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M16 14a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2z' },
+  { id: 'interests', title: 'Pick your interests', description: 'Choose one to three interests, like shopping, pop culture or music, to personalise your questions.', icon: 'M12 21s-8-4.9-8-10a4.5 4.5 0 0 1 8-2.8 4.5 4.5 0 0 1 8 2.8c0 5.1-8 10-8 10Z' },
+  { id: 'practice', title: 'Practise GCSE maths', description: 'Work through six questions that connect GCSE maths to the things you enjoy.', icon: 'M5 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2Z M8 7h8 M8 12h2m4 0h2m-8 5h2m4 0h2' },
+  { id: 'summary', title: 'See how you did', description: 'Review your score, hints used and practice time at the end of the session.', icon: 'M4 4v15a1 1 0 0 0 1 1h15 M8 15v-3m5 3V9m5 6V6' },
 ];
 
-const scrollOrder = [2, 1, 0, 3, 4];
-const rotationDelay = 1000;
-
 export default function PracticeCards() {
-  const direction = useRef(1);
-  const [step, setStep] = useState(0);
+  const [selection, setSelection] = useState({ index: 0, visited: 1, firstVisit: true });
   const [paused, setPaused] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [held, setHeld] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(null);
 
   useEffect(() => {
-    const staticLayout = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const mobile = window.matchMedia('(max-width: 700px), (hover: none)');
-    let lastScroll = window.scrollY;
-    let timer;
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReducedMotion(preference.matches);
+    sync();
+    preference.addEventListener('change', sync);
+    return () => preference.removeEventListener('change', sync);
+  }, []);
 
-    function restartRotation() {
-      window.clearInterval(timer);
-      if (paused || hovered || held || staticLayout.matches || document.hidden) return;
-      timer = window.setInterval(() => {
-        const increment = mobile.matches ? 1 : direction.current;
-        setStep((current) => (current + increment + scrollOrder.length) % scrollOrder.length);
-      }, rotationDelay);
-    }
+  useEffect(() => {
+    if (paused || reducedMotion !== false) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) advance(1);
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [paused, reducedMotion, selection.index]);
 
-    function updateDirection() {
-      const scroll = window.scrollY;
-      if (scroll !== lastScroll && !mobile.matches) {
-        direction.current = scroll > lastScroll ? -1 : 1;
-      }
-      lastScroll = scroll;
-    }
+  function advance(direction) {
+    setSelection((current) => {
+      const index = (current.index + direction + features.length) % features.length;
+      const bit = 1 << index;
+      return { index, visited: current.visited | bit, firstVisit: !(current.visited & bit) };
+    });
+  }
 
-    restartRotation();
-    window.addEventListener('scroll', updateDirection, { passive: true });
-    staticLayout.addEventListener('change', restartRotation);
-    document.addEventListener('visibilitychange', restartRotation);
-    return () => {
-      window.removeEventListener('scroll', updateDirection);
-      staticLayout.removeEventListener('change', restartRotation);
-      document.removeEventListener('visibilitychange', restartRotation);
-      window.clearInterval(timer);
-    };
-  }, [paused, hovered, held]);
-
-  const active = scrollOrder[step];
-  const layout = [...scrollOrder];
-  const activeSlot = layout.indexOf(active);
-  [layout[0], layout[activeSlot]] = [layout[activeSlot], layout[0]];
+  function browse(direction) {
+    setPaused(true);
+    advance(direction);
+  }
 
   return (
-    <section className="practice-showcase" id="how-it-works" aria-label="Practice previews">
-      <div className="practice-stage">
-        <ol
-          className="practice-deck"
-          onPointerUp={() => setHeld(false)}
-          onPointerCancel={() => setHeld(false)}
-          onLostPointerCapture={() => setHeld(false)}
-        >
-          {cards.map(({ title, description, label, values, accent }, index) => (
-            <li
-              key={title}
-              className="practice-preview-card"
-              data-slot={layout.indexOf(index)}
-              style={{ '--card-accent': accent }}
-              onPointerEnter={(event) => {
-                if (event.pointerType === 'mouse') setHovered(true);
-              }}
-              onPointerLeave={(event) => {
-                if (event.pointerType === 'mouse') setHovered(false);
-              }}
-              onPointerDown={(event) => {
-                if (event.pointerType === 'mouse' || !event.isPrimary) return;
-                event.currentTarget.setPointerCapture(event.pointerId);
-                setHeld(true);
-              }}
-            >
-              <div className="practice-preview-bar" aria-hidden="true"><i /><i /><i /></div>
-              <div className="practice-preview-content">
-                <h3>{title}</h3>
-                <p>{description}</p>
-                <div className="practice-preview-example">
-                  <span>{label}</span>
-                  <ul>{values.map((value) => <li key={value}>{value}</li>)}</ul>
+    <section className="feature-showcase" aria-label="How EducationUnite works">
+      <div className="feature-stage" aria-live={paused || reducedMotion ? 'polite' : 'off'}>
+        {features.map(({ id, title, description, icon }, index) => {
+          const active = index === selection.index;
+          return (
+            <article className="feature-card" key={id} data-feature={id} data-active={active}
+              data-reveal={active && selection.firstVisit} aria-hidden={!active}>
+              <div className="feature-heading">
+                <div className="feature-icon" aria-hidden="true">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={icon} />
+                  </svg>
                 </div>
+                <h1>{title}</h1>
               </div>
-            </li>
-          ))}
-        </ol>
-        <button className="practice-rotation-button" type="button" onClick={() => setPaused((current) => !current)}>
-          {paused ? 'Play cards' : 'Pause cards'}
-        </button>
+              <p className="feature-description">{description}</p>
+              <div className="feature-art">
+                <Image src={`/feature-${id}.webp`} alt="" width={480} height={480} loading="eager" unoptimized />
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <div className="feature-toolbar">
+        <Link className="student-button" href="/join">Join with a code</Link>
+        <div className="feature-controls" aria-label="Feature cards">
+          <button type="button" className="sign-in-button feature-arrow" aria-label="Previous feature" onClick={() => browse(-1)}>‹</button>
+          <span className="feature-position">{selection.index + 1} / {features.length}</span>
+          <button type="button" className="sign-in-button feature-arrow" aria-label="Next feature" onClick={() => browse(1)}>›</button>
+          <button type="button" className="sign-in-button feature-play" onClick={() => setPaused(!paused)}>{paused ? 'Play' : 'Pause'}</button>
+        </div>
       </div>
     </section>
   );

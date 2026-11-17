@@ -1,10 +1,23 @@
+@font-face {
+  font-family: Nunito;
+  src: url('./fonts/nunito-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}
+
 :root {
-  color-scheme: dark;
-  --theme-navy: #152540;
-  --theme-midnight: #10131e;
-  --theme-plum: #3b1047;
-  --theme-text: #faf6ff;
-  --theme-muted: #ded6e8;
+  color-scheme: light;
+  --theme-white: #fff;
+  --theme-page: #fff7e8;
+  --theme-surface: #e8f3ee;
+  --theme-text: #163331;
+  --theme-muted: #36534e;
+  --theme-primary: #014d4e;
+  --theme-primary-hover: #013b3c;
+  --theme-border: #c5d8cf;
+  --theme-field-border: #688278;
+  --theme-shadow: 0 8px 24px #214f4012;
 }
 
 body {
@@ -13,8 +26,8 @@ body {
   display: grid;
   align-items: center;
   color: var(--theme-text);
-  background: linear-gradient(105deg, var(--theme-navy), var(--theme-midnight) 52%, var(--theme-plum));
-  font-family: Inter, system-ui, sans-serif;
+  background: var(--theme-page);
+  font-family: Nunito, system-ui, sans-serif;
 }
 
 main {
@@ -22,10 +35,14 @@ main {
   margin-inline: auto;
 }
 
+h1, h2, h3 {
+  color: var(--theme-primary);
+}
+
 h1 {
   margin: 0;
   font-size: clamp(2.25rem, 7vw, 5rem);
-  letter-spacing: -0.055em;
+  letter-spacing: -0.045em;
 }
 
 p {
@@ -35,23 +52,12 @@ p {
 }
 
 a, .text-button {
-  color: #bcefff;
-}
-
-.welcome-page {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
-}
-
-.welcome-page > main {
-  align-self: center;
-  padding-block: 2rem;
+  color: var(--theme-primary);
 }
 
 .welcome-header {
-  border-bottom: 1px solid #ffffff26;
-  background: #10131e80;
+  border-bottom: 1px solid var(--theme-border);
+  background: var(--theme-white);
 }
 
 .welcome-header-inner {
@@ -60,23 +66,28 @@ a, .text-button {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1.25rem;
-  width: min(100% - 2rem, 60rem);
+  width: min(100% - 2rem, 74rem);
   margin-inline: auto;
   padding-block: 0.75rem;
 }
 
-.header-brand {
+.brand {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   color: var(--theme-text);
   font-size: 1.125rem;
-  font-weight: 750;
+  font-weight: 900;
+  letter-spacing: -0.035em;
   text-decoration: none;
 }
 
-.header-brand img {
-  border-radius: 25%;
+.brand img {
+  flex: none;
+}
+
+.brand-unite {
+  color: var(--theme-primary);
 }
 
 .student-links {
@@ -93,8 +104,12 @@ a, .text-button {
     gap: 0.5rem;
   }
 
-  .header-brand,
-  .student-links {
+  .brand,
+  .brand-unite {
+  color: var(--theme-primary);
+}
+
+.student-links {
     white-space: nowrap;
   }
 
@@ -108,9 +123,10 @@ a, .text-button {
   width: min(100% - 2rem, 32rem);
   padding: clamp(1.25rem, 6vw, 2.5rem);
   margin-block: 1rem;
-  border: 1px solid #ffffff30;
+  border: 1px solid var(--theme-border);
   border-radius: 1.25rem;
-  background: #141628;
+  background: var(--theme-white);
+  box-shadow: var(--theme-shadow);
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -147,8 +163,8 @@ input, select, button, .student-button {
 input, select {
   width: 100%;
   min-width: 0;
-  border: 1px solid #9d97b7;
-  background: #10131e;
+  border: 1px solid var(--theme-field-border);
+  background: var(--theme-white);
   color: var(--theme-text);
 }
 
@@ -156,8 +172,8 @@ button, .student-button {
   display: inline-grid;
   place-items: center;
   border: 0;
-  background: #c2eaff;
-  color: #152540;
+  background: var(--theme-primary);
+  color: var(--theme-white);
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -203,9 +219,9 @@ button:disabled {
 }
 
 .sign-in-button {
-  border: 1px solid #bcefff80;
-  background: transparent;
-  color: #bcefff;
+  border: 1px solid var(--theme-field-border);
+  background: var(--theme-white);
+  color: var(--theme-primary);
 }
 
 .student-card > form:not(.student-form) {
@@ -220,12 +236,16 @@ button:disabled {
 
 .form-error {
   margin: 0;
-  color: #ffc0cf;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #f0b7be;
+  border-radius: 0.6rem;
+  background: #fff0f2;
+  color: #971d32;
   font-size: 1rem;
 }
 
 :focus-visible {
-  outline: 3px solid #f5a5ff;
+  outline: 3px solid var(--theme-primary);
   outline-offset: 3px;
 }
 
@@ -247,20 +267,20 @@ button:disabled {
   align-items: center;
   min-height: 2.75rem;
   padding-inline: 0.75rem;
-  border: 1px solid #9d97b7;
+  border: 1px solid var(--theme-field-border);
   border-radius: 0.6rem;
   cursor: pointer;
 }
 
 .interest-options label:has(:checked) {
-  border-color: #c2eaff;
-  background: #253754;
+  border-color: var(--theme-primary);
+  background: var(--theme-surface);
 }
 
 .interest-options input {
   width: 1.125rem;
   min-height: auto;
-  accent-color: #c2eaff;
+  accent-color: var(--theme-primary);
 }
 
 .practice-note {
@@ -290,7 +310,7 @@ button:disabled {
   gap: 0.75rem;
   padding: 1rem;
   border-radius: 0.6rem;
-  background: #1e2a42;
+  background: var(--theme-surface);
 }
 
 .practice-summary div {
@@ -298,7 +318,7 @@ button:disabled {
   justify-content: space-between;
   gap: 1rem;
   padding-block: 0.75rem;
-  border-bottom: 1px solid #ffffff30;
+  border-bottom: 1px solid var(--theme-border);
 }
 
 .practice-summary dd {
@@ -361,7 +381,7 @@ button:disabled {
 .student-numbers span {
   position: absolute;
   bottom: -3rem;
-  color: #cee9ff;
+  color: #4b8271;
   font-size: clamp(0.9rem, 2vw, 1.5rem);
   font-variant-numeric: tabular-nums;
   font-weight: 650;
@@ -403,4 +423,44 @@ button:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   .student-backdrop { display: none; }
+}
+
+body:has(.login-card) {
+  background:
+    radial-gradient(ellipse at 20% 25%, #cbe5d9 0, transparent 44%),
+    radial-gradient(ellipse at 80% 78%, #f1e6c7 0, transparent 48%),
+    var(--theme-page);
+}
+
+.login-card {
+  background: rgb(255 255 255 / 78%);
+  backdrop-filter: blur(14px);
+}
+
+.student-form label, .password-field {
+  font-weight: 600;
+}
+
+input, select {
+  font-weight: 400;
+  accent-color: var(--theme-primary);
+}
+
+.remember-device input {
+  width: 1.125rem;
+  min-height: auto;
+  flex: none;
+}
+
+button:not(:disabled, .text-button, .password-field-control button, .admin-topbar button, .admin-drawer-content > button):hover,
+.student-button:not(.sign-in-button):hover {
+  background: var(--theme-primary-hover);
+}
+
+.sign-in-button:hover {
+  background: var(--theme-surface);
+}
+
+[role='status']:not(.practice-typing) {
+  color: var(--theme-text);
 }

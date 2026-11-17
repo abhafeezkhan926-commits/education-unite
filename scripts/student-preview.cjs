@@ -14,6 +14,8 @@ const child = spawn(process.execPath, [
 ], {
   stdio: 'inherit',
   env: { ...process.env, DATABASE_URL: '', VERCEL: '', EDUCATION_UNITE_PREVIEW: '1',
-    EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD: password },
+    EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD: password,
+    EDUCATION_UNITE_ADMIN_EMAIL_CODE: '1',
+    EDUCATION_UNITE_LOCAL_ADMIN_TEST_CODE: '1' },
 });
 child.on('exit', (code) => { process.exitCode = code ?? 1; });

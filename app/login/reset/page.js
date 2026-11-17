@@ -6,7 +6,7 @@ import PasswordField from '../../password-field';
 export default function ResetPassword() {
   return (
     <main className="student-card">
-      <Link href="/login">Back to student sign in</Link>
+      <Link href="/login">Back to login</Link>
       <h1>Set a new password</h1>
       <p>Use the one-time password you were given.</p>
       <StudentForm action={resetPassword} submit="Set new password">

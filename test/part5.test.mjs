@@ -119,7 +119,7 @@ test('database roles expose only the current student’s practice records', asyn
   assert.equal(await db.transaction((tx) => consumeEmailChallenge(tx, freshToken, candidate)), false);
 });
 
-async function startPreview(t, password, { emailCode = false } = {}) {
+async function startPreview(t, password, { emailCode = true } = {}) {
   const listener = createServer().listen(0, '127.0.0.1');
   await once(listener, 'listening');
   const { port } = listener.address();
@@ -168,7 +168,7 @@ function session(origin) {
   const cookies = new Map();
   async function request(path, body) {
     const cookie = [...cookies.values()].filter(({ path: scope }) =>
-      scope === '/' || path === scope || path.startsWith(scope + '/'),
+      scope === '/' || path.split('?')[0] === scope || path.startsWith(scope + '/'),
     ).map(({ pair }) => pair).join('; ');
     const response = await sendPreviewRequest(origin + path, { cookie, origin }, body).catch((cause) => {
       throw new Error(`Preview request failed: ${body ? 'POST' : 'GET'} ${path}`, { cause });
@@ -179,7 +179,7 @@ function session(origin) {
       const name = pair.split('=')[0];
       assert.match(value, /; HttpOnly/i);
       assert.match(value, /; SameSite=Lax/i);
-      assert.match(name, /^eu_(join|student|student_device|admin|admin_email)$/);
+      assert.match(name, /^eu_(join|student|student_device|admin|admin_session|admin_email)$/);
       if (/; Max-Age=0(?:;|$)/i.test(value)) cookies.delete(name);
       else cookies.set(name, { pair, path: value.match(/; Path=([^;]+)/i)?.[1] ?? '/' });
     }
@@ -187,7 +187,7 @@ function session(origin) {
     const html = await response.text();
     assert.ok(response.status < 400, `${response.status} from ${path}`);
     if (location && response.status >= 300) return request(location);
-    return { html, headers: response.headers };
+    return { html, headers: response.headers, path };
   }
   return {
     get: request,
@@ -248,12 +248,17 @@ test('production preview supports owner, signup, practice, expiry and password r
   assert.match(headers.get('content-security-policy'), /frame-ancestors 'none'/);
   assert.equal(headers.get('x-powered-by'), null);
   for (const route of ['/admin', '/admin/codes', '/admin/password-reset', '/admin/settings']) {
-    assert.match((await first.get(route)).html, /Owner sign in/);
+    assert.match((await first.get(route)).html, /Username or email/);
   }
-  assert.doesNotMatch((await admin.get('/admin/login')).html, /name="code"/);
-  const credentials = { email: 'owner@example.test', password };
-  assert.match(await admin.submit('/admin/login', 'Sign in', { ...credentials, password: 'wrong-password' }), /Check your email and password/);
-  assert.match(await admin.submit('/admin/login', 'Sign in', credentials), /Admin dashboard/);
+  const bookmark = await admin.get('/admin/login');
+  assert.equal(bookmark.path, '/login');
+  assert.match(bookmark.html, /Username or email/);
+  assert.doesNotMatch(bookmark.html, /name="code"/);
+  const credentials = { identifier: 'owner@example.test', password };
+  assert.match(await admin.submit('/login', 'Sign in', { ...credentials, password: 'wrong-password' }), /Username or password is incorrect/);
+  assert.doesNotMatch((await admin.get('/login?step=email')).html, /Verify code/);
+  assert.match(await admin.submit('/login', 'Sign in', credentials), /Verify code/);
+  assert.match(await admin.submit('/login?step=email', 'Verify code', { code: '123456' }), /Admin dashboard/);
   const codePage = await admin.submit('/admin/codes', 'Create class code');
   const code = codePage.match(/<code>(EU-[A-F0-9]+)<\/code>/)?.[1];
   assert.ok(code, 'Expected a generated class code');
@@ -312,40 +317,47 @@ test('production preview supports owner, signup, practice, expiry and password r
   assert.match((await second.get('/practice/summary')).html, /Pick your interests/);
 
   const anotherDevice = session(origin);
-  assert.match(await anotherDevice.submit('/login', 'Sign in', { username, password }), /Start maths practice/);
+  assert.match(await anotherDevice.submit('/login', 'Sign in', { identifier: username, password }), /Start maths practice/);
   const reset = await admin.submit('/admin/password-reset', 'Issue one-time password', { username });
   const temporary = reset.match(/<code>([\w-]{22})<\/code>/)?.[1];
   assert.ok(temporary, 'Expected a one-time password');
-  assert.match((await first.get('/student')).html, /Student sign in/);
-  assert.match((await anotherDevice.get('/student')).html, /Student sign in/);
+  assert.match((await first.get('/student')).html, /Username or email/);
+  assert.match((await anotherDevice.get('/student')).html, /Username or email/);
   assert.match((await second.get('/student')).html, /Start maths practice/);
   const newPassword = randomBytes(18).toString('base64url');
   const resetFields = { username, temporary, password: newPassword };
   assert.match(await first.submit('/login/reset', 'Set new password', resetFields), /Password updated/);
   assert.match(await first.submit('/login/reset', 'Set new password', resetFields), /invalid or expired/);
-  assert.match(await first.submit('/login', 'Sign in', { username, password: newPassword, rememberDevice: 'on' }), /Start maths practice/);
-  const wrongPassword = { username, password };
+  assert.match(await first.submit('/login', 'Sign in', { identifier: username, password: newPassword, rememberDevice: 'on' }), /Start maths practice/);
+  const wrongPassword = { identifier: username, password };
   for (let attempt = 0; attempt < 5; attempt++) {
     assert.match(await anotherDevice.submit('/login', 'Sign in', wrongPassword), /Username or password is incorrect/);
   }
-  assert.match(await anotherDevice.submit('/login', 'Sign in', { username, password: newPassword }), /Too many attempts/);
-  assert.match(await first.submit('/login', 'Sign in', { username, password: newPassword }), /Start maths practice/);
+  assert.match(await anotherDevice.submit('/login', 'Sign in', { identifier: username, password: newPassword }), /Too many attempts/);
+  assert.match(await first.submit('/login', 'Sign in', { identifier: username, password: newPassword }), /Start maths practice/);
 });
 
 test('owner email verification gates the admin dashboard and limits guesses', { timeout: 60_000 }, async (t) => {
   const password = randomBytes(18).toString('base64url');
-  const origin = await startPreview(t, password, { emailCode: true });
+  const origin = await startPreview(t, password);
   const owner = session(origin);
-  await owner.submit('/admin/login', 'Sign in', { email: 'owner@example.test', password });
-  assert.match((await owner.get('/admin')).html, /Owner sign in/);
+  assert.match(await owner.submit('/login', 'Sign in', { identifier: 'other@example.test', password }), /Username or password is incorrect/);
+  assert.doesNotMatch((await owner.get('/login?step=email')).html, /Verify code/);
+  await owner.submit('/login', 'Sign in', { identifier: 'owner@example.test', password });
+  const bookmark = await owner.get('/admin/login?step=email');
+  assert.equal(bookmark.path, '/login?step=email');
+  assert.match(bookmark.html, /Verify code/);
+  assert.match((await owner.get('/admin')).html, /Username or email/);
   for (let attempt = 0; attempt < 5; attempt++) {
-    assert.match(await owner.submit('/admin/login?step=email', 'Verify code', { code: '654321' }), /out of attempts/);
+    assert.match(await owner.submit('/login?step=email', 'Verify code', { code: '654321' }), /out of attempts/);
   }
-  assert.match(await owner.submit('/admin/login?step=email', 'Verify code', { code: '123456' }), /out of attempts/);
-  await owner.submit('/admin/login?step=email', 'Start again');
-  await owner.submit('/admin/login', 'Sign in', { email: 'owner@example.test', password });
-  assert.match(await owner.submit('/admin/login?step=email', 'Verify code', { code: '123456' }), /Admin dashboard/);
-  assert.doesNotMatch((await owner.get('/admin/login?step=email')).html, /Verify code/);
+  assert.match(await owner.submit('/login?step=email', 'Verify code', { code: '123456' }), /out of attempts/);
+  await owner.submit('/login?step=email', 'Start again');
+  await owner.submit('/login', 'Sign in', { identifier: 'owner@example.test', password });
+  assert.match(await owner.submit('/login?step=email', 'Verify code', { code: '123456' }), /Admin dashboard/);
+  assert.doesNotMatch((await owner.get('/login?step=email')).html, /Verify code/);
+  assert.match(await owner.submit('/admin/settings', 'Sign out'), /Username or email/);
+  assert.equal((await owner.get('/admin')).path, '/login');
 });
 
 test('a full class can join and sign in from one network', { timeout: 120_000 }, async (t) => {
@@ -368,7 +380,7 @@ test('a full class can join and sign in from one network', { timeout: 120_000 },
   const signIns = Array.from({ length: 4 }, () => [...usernames]).flat();
   for (let index = 0; index < signIns.length; index += 5) {
     await Promise.all(signIns.slice(index, index + 5).map(async (username) => {
-      assert.match(await session(origin).submit('/login', 'Sign in', { username, password }), /Start maths practice/);
+      assert.match(await session(origin).submit('/login', 'Sign in', { identifier: username, password }), /Start maths practice/);
     }));
   }
 
