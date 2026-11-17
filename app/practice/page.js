@@ -74,7 +74,7 @@ export default async function Practice({ searchParams }) {
           <>
             <WorkedSolution key={`${practice.id}:${state.position}:solution`} answer={answer} question={question} />
             <PracticeForm practice={practice} operation="next">
-              <button>{last ? 'See my summary' : 'Next question'}</button>
+              <PracticeSubmitButton pendingLabel={last ? 'Loading summary…' : 'Loading question…'}>{last ? 'See my summary' : 'Next question'}</PracticeSubmitButton>
             </PracticeForm>
           </>
         ) : (

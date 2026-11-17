@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import PracticeSubmitButton from './practice/submit-button';
 
 export default function StudentForm({ action, children, submit, renderResult }) {
   const [state, formAction, pending] = useActionState(action, null);
@@ -8,7 +9,7 @@ export default function StudentForm({ action, children, submit, renderResult }) 
     <form className="student-form" action={formAction}>
       {children}
       {state?.error && <p className="form-error" role="alert">{state.error}</p>}
-      <button disabled={pending}>{pending ? 'Please wait…' : submit}</button>
+      <PracticeSubmitButton>{submit}</PracticeSubmitButton>
       {!pending && renderResult?.(state)}
     </form>
   );

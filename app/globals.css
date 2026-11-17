@@ -464,3 +464,29 @@ button:not(:disabled, .text-button, .password-field-control button, .admin-topba
 [role='status']:not(.practice-typing) {
   color: var(--theme-text);
 }
+
+button[aria-busy='true'] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+body:has(button[aria-busy='true']),
+body:has(button[aria-busy='true']) * {
+  cursor: progress;
+}
+.pending-spinner {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: pending-spin 700ms linear infinite;
+}
+@keyframes pending-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pending-spinner { animation: none; }
+}

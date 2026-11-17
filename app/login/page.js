@@ -1,3 +1,4 @@
+import PracticeSubmitButton from '../practice/submit-button';
 import Link from 'next/link';
 import Brand from '../brand';
 import { restartAdminEmailLogin, verifyAdminEmailCode } from '../admin-actions';
@@ -21,7 +22,7 @@ export default async function Login({ searchParams }) {
             <input name="code" required pattern="[0-9]{6}" maxLength={6} inputMode="numeric" autoComplete="one-time-code" />
           </label>
         </StudentForm>
-        <form action={restartAdminEmailLogin}><button className="text-button">Start again</button></form>
+        <form action={restartAdminEmailLogin}><PracticeSubmitButton className="text-button">Start again</PracticeSubmitButton></form>
       </> : <>
         <h1>Login</h1>
         {reset === 'complete' && <p role="status">Password updated. Sign in with your new password.</p>}

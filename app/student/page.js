@@ -1,3 +1,4 @@
+import PracticeSubmitButton from '../practice/submit-button';
 import StudentBackdrop from '../student-backdrop';
 import Link from 'next/link';
 import Brand from '../brand';
@@ -13,7 +14,7 @@ export default async function Student() {
         <Brand />
         <h1>Welcome, {student.username}</h1>
         <Link className="student-button" href="/interests">Start maths practice</Link>
-        <form action={signOut}><button>Sign out</button></form>
+        <form action={signOut}><PracticeSubmitButton pendingLabel="Signing out…">Sign out</PracticeSubmitButton></form>
       </main>
     </>
   );
