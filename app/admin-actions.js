@@ -74,7 +74,7 @@ export async function issueStudentReset(_previous, form) {
       'select education_unite.issue_student_reset($1, $2) as deadline',
       [username, digest('student-reset', value)],
     );
-    if (!deadline) return { error: 'Student username was not found.' };
+    if (!deadline) return { error: 'No student with that username' };
     return { value, expiresAt: new Date(deadline).toISOString() };
   });
   return result;

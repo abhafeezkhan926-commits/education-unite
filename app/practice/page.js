@@ -6,6 +6,7 @@ import { currentPractice } from '../practice-state';
 import TypingText from './typing-text';
 import PracticeSubmitButton from './submit-button';
 import { typingDuration } from './typing-duration';
+import { singulariseSolution } from '../workbook-templates.mjs';
 
 function WorkedSolution({ answer, question }) {
   const feedback = `${answer.correct ? 'Correct!' : 'Incorrect.'} Your answer: ${answer.value}`;
@@ -20,7 +21,7 @@ function WorkedSolution({ answer, question }) {
     <section className="worked-solution" aria-labelledby="solution">
       <p>{line(feedback)}</p>
       <h2 id="solution">{line('Worked solution')}</h2>
-      <ol>{question.solution.map((step, index) => <li key={index}>{line(step)}</li>)}</ol>
+      <ol>{question.solution.map((step, index) => <li key={index}>{line(singulariseSolution(step))}</li>)}</ol>
       <h3>{line('Where you will use this')}</h3>
       <p>{line(question.use)}</p>
     </section>
@@ -57,7 +58,7 @@ export default async function Practice({ searchParams }) {
     <>
       <StudentBackdrop />
       <main className="student-card practice-card">
-        <noscript><style nonce={nonce}>{'.practice-typing-unrevealed { visibility: visible; }'}</style></noscript>
+        <noscript><style nonce={nonce}>{'.practice-typing-unrevealed { opacity: 1; }'}</style></noscript>
         <p>Question {state.position + 1} of {state.questions.length} · {question.interest}</p>
         <h1>Maths practice</h1>
         <p className="question-prompt">{question.prompt}</p>

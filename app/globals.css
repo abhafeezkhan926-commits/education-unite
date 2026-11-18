@@ -352,21 +352,12 @@ button:disabled {
   position: relative;
 }
 
-.practice-typing-full {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 .practice-typing-unrevealed {
-  visibility: hidden;
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .practice-typing-unrevealed { visibility: visible; }
+  .practice-typing-unrevealed { opacity: 1; }
 }
 
 .student-backdrop {
