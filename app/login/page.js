@@ -22,7 +22,7 @@ export default async function Login({ searchParams }) {
             <input name="code" required pattern="[0-9]{6}" maxLength={6} inputMode="numeric" autoComplete="one-time-code" />
           </label>
         </StudentForm>
-        <form action={restartAdminEmailLogin}><PracticeSubmitButton className="text-button">Start again</PracticeSubmitButton></form>
+        <form action={restartAdminEmailLogin}><PracticeSubmitButton className="secondary-button">Start again</PracticeSubmitButton></form>
       </> : <>
         <h1>Login</h1>
         {reset === 'complete' && <p role="status">Password updated. Sign in with your new password.</p>}

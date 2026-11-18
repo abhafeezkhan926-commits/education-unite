@@ -14,7 +14,7 @@ export default async function Student() {
         <Brand />
         <h1>Welcome, {student.username}</h1>
         <Link className="student-button" href="/interests">Start maths practice</Link>
-        <form action={signOut}><PracticeSubmitButton pendingLabel="Signing out…">Sign out</PracticeSubmitButton></form>
+        <form action={signOut}><PracticeSubmitButton className="secondary-button" pendingLabel="Signing out…">Sign out</PracticeSubmitButton></form>
       </main>
     </>
   );

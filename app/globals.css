@@ -51,7 +51,7 @@ p {
   color: var(--theme-muted);
 }
 
-a, .text-button {
+a {
   color: var(--theme-primary);
 }
 
@@ -218,20 +218,14 @@ button:disabled {
   cursor: wait;
 }
 
-.sign-in-button {
-  border: 1px solid var(--theme-field-border);
+.secondary-button {
+  border: 1px solid var(--theme-primary);
   background: var(--theme-white);
   color: var(--theme-primary);
 }
 
 .student-card > form:not(.student-form) {
   margin-top: 1rem;
-}
-
-.text-button {
-  padding-inline: 0;
-  background: transparent;
-  text-decoration: underline;
 }
 
 .form-error {
@@ -461,14 +455,15 @@ input, select {
   flex: none;
 }
 
-button:not(:disabled, .text-button, .password-field-control button, .admin-topbar button, .admin-drawer-content > button):hover,
-.student-button:not(.sign-in-button):hover {
+button:not(:disabled, .secondary-button, .password-field-control button):hover,
+.student-button:not(.secondary-button):hover {
   background: var(--theme-primary-hover);
   color: var(--theme-white);
 }
 
-a.sign-in-button:hover {
-  background: var(--theme-surface);
+.secondary-button:not(:disabled):hover {
+  border-color: var(--theme-primary-hover);
+  color: var(--theme-primary-hover);
 }
 
 [role='status']:not(.practice-typing) {

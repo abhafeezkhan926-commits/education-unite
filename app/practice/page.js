@@ -82,7 +82,7 @@ export default async function Practice({ searchParams }) {
             {state.hints < question.hints.length && (
               <PracticeForm practice={practice} operation="hint">
                 <input type="hidden" name="hints" value={state.hints} />
-                <PracticeSubmitButton className="sign-in-button" formNoValidate pendingLabel="Loading hint…">
+                <PracticeSubmitButton className="secondary-button" formNoValidate pendingLabel="Loading hint…">
                   Show hint {state.hints + 1} of {question.hints.length}
                 </PracticeSubmitButton>
               </PracticeForm>

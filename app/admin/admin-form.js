@@ -19,7 +19,7 @@ function Credential({ value, expiresAt, label }) {
     <div>
       <p role="status">{label} <code>{value}</code></p>
       <p>Expires <time dateTime={expiresAt}>{new Date(expiresAt).toLocaleString()}</time></p>
-      <button type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+      <button className="secondary-button" type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
     </div>
   );
 }

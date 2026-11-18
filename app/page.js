@@ -10,8 +10,8 @@ export default function Home() {
         <div className="welcome-header-inner">
           <Brand />
           <nav className="student-links" aria-label="Account access">
-            <Link className="student-button header-join-button" href="/join">Join with a code</Link>
-            <Link className="student-button sign-in-button" href="/login">Login</Link>
+            <Link className="student-button secondary-button header-join-button" href="/join">Join with a code</Link>
+            <Link className="student-button secondary-button" href="/login">Login</Link>
           </nav>
         </div>
       </header>
