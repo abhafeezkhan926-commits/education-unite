@@ -1,9 +1,14 @@
 const { spawn } = require('node:child_process');
 const { randomBytes } = require('node:crypto');
 const { existsSync } = require('node:fs');
+const { validAdminPassword } = require('../app/runtime-config.mjs');
 
 if (existsSync('.env.local')) process.loadEnvFile('.env.local');
 const password = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD ?? randomBytes(18).toString('base64url');
+if (!validAdminPassword(password)) {
+  console.error('Set EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD to 12–128 characters.');
+  process.exit(1);
+}
 if (!process.env.EDUCATION_UNITE_PREVIEW_ADMIN_PASSWORD) {
   const email = process.env.EDUCATION_UNITE_PREVIEW_ADMIN_EMAIL?.trim() || 'owner@example.test';
   console.log('Local admin password for ' + email + ': ' + password);

@@ -5,18 +5,15 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { studentTransaction } from './student-db';
 import {
-  consumeAttempt, cookieOptions, digest, hashPassword, isRateLimited, joinAge, joinName, makeJoinTicket,
+  consumeAttempt, cookieOptions, digest, hashPassword, joinAge, joinName, makeJoinTicket,
   readJoinTicket, requestSource, sessionAge, sessionDigest, sessionName, usernameOptions, verifyPassword,
-  makeStudentDevice, readStudentDevice, studentDeviceAge, studentDeviceName,
+  loginNetworkAction, makeStudentDevice, readStudentDevice, studentDeviceAge, studentDeviceName, withNetworkAttempts,
 } from './student-security';
 
 const codeQuery = 'select id from education_unite.join_codes where code_digest = $1 and expires_at > now()';
 const slowDown = 'Too many attempts. Try again in 15 minutes.';
 const unavailable = 'This service is temporarily unavailable. Try again in a few minutes.';
-const joinFailuresPerNetwork = 30;
 const accountAttemptsPerTicket = 3;
-// Leave room for several classes to sign in together, with a separate per-account limit.
-const signInsPerNetwork = 600;
 
 async function issueSession(db, studentId, token) {
   await db.query('delete from education_unite.student_sessions where expires_at <= now()');
@@ -40,14 +37,11 @@ export async function checkJoinCode(_previous, form) {
   if (!source) return { error: unavailable };
   const code = String(form.get('code') ?? '').trim().toUpperCase();
   const codeDigest = /^[A-Z0-9-]{4,64}$/.test(code) ? digest('join-code', code) : null;
-  const bucket = 'code-failures:' + source;
-  const error = await studentTransaction(async (db) => {
-    if (await isRateLimited(db, 'student_join', bucket, joinFailuresPerNetwork)) return slowDown;
-    if (codeDigest && (await db.query(codeQuery, [codeDigest])).rows.length) return null;
-    if (!await consumeAttempt(db, 'student_join', bucket, joinFailuresPerNetwork)) return slowDown;
-    return codeDigest ? 'That class code is invalid or expired.' : 'Enter a valid class code.';
-  });
-  if (error) return { error };
+  const result = await studentTransaction((db) => withNetworkAttempts(db, 'student_join', source, async () => {
+    if (codeDigest && (await db.query(codeQuery, [codeDigest])).rows.length) return {};
+    return { error: codeDigest ? 'That class code is invalid or expired.' : 'Enter a valid class code.' };
+  }));
+  if (result.error) return result;
   (await cookies()).set(joinName, makeJoinTicket(codeDigest), cookieOptions(joinAge));
   redirect('/join');
 }
@@ -93,21 +87,18 @@ export async function signIn(_previous, form) {
   const password = String(form.get('password') ?? '');
   const source = requestSource(await headers(), { requireTrusted: true });
   if (!source) return { error: unavailable };
-  if (!await studentTransaction((db) => consumeAttempt(db, 'student_login', 'source:' + source, signInsPerNetwork))) {
-    return { error: slowDown };
-  }
   const invalid = { error: 'Username or password is incorrect.' };
-  if (!/^[a-z0-9]{1,64}$/.test(username) || password.length < 1 || password.length > 128) return invalid;
   const jar = await cookies();
   const deviceCookie = jar.get(studentDeviceName)?.value;
-  const result = await studentTransaction(async (db) => {
+  const result = await studentTransaction((db) => withNetworkAttempts(db, loginNetworkAction, source, async () => {
+    if (!/^[a-z0-9]{1,64}$/.test(username) || password.length < 1 || password.length > 128) return invalid;
     await db.query('select education_unite.lock_student($1)', [username]);
     const { rows } = await db.query('select id, password_hash from education_unite.students where username = $1', [username]);
     const student = rows[0];
     const device = readStudentDevice(deviceCookie, username, student?.password_hash);
     const bucket = device ? `device:${username}:${device}` : 'account:' + username;
-    if (!await consumeAttempt(db, 'student_login', bucket, 5)) return { locked: true };
-    if (!await verifyPassword(password, student?.password_hash)) return {};
+    if (!await consumeAttempt(db, 'student_login', bucket, 5)) return { error: slowDown };
+    if (!await verifyPassword(password, student?.password_hash)) return invalid;
     const token = randomBytes(32).toString('base64url');
     await issueSession(db, student.id, token);
     await db.query('delete from education_unite.rate_limit_windows where action = $1 and subject_digest = $2',
@@ -115,9 +106,8 @@ export async function signIn(_previous, form) {
     const remembered = form.get('rememberDevice') === 'on'
       ? makeStudentDevice(username, student.password_hash, device ?? undefined) : null;
     return { token, remembered, device };
-  });
-  if (result.locked) return { error: slowDown };
-  if (!result.token) return invalid;
+  }));
+  if (result.error) return result;
   if (result.remembered) jar.set(studentDeviceName, result.remembered, cookieOptions(studentDeviceAge));
   else if (result.device) jar.set(studentDeviceName, '', cookieOptions(0));
   await openStudentPage(result.token);

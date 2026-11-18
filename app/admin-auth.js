@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { adminTransaction } from './student-db';
 import { cookieOptions, sessionDigest } from './student-security';
-import { isLocalPreview } from './runtime-config.mjs';
+import { isLocalPreview, validAdminPassword } from './runtime-config.mjs';
 
 const cookieName = 'eu_admin_session';
 const legacyCookieName = 'eu_admin';
@@ -64,6 +64,7 @@ async function authenticateOwner(email, password) {
 }
 
 export async function verifiedOwnerEmail(email, password) {
+  if (!validAdminPassword(password)) return null;
   if (!usesHostedAuth()) {
     return verifyPreviewOwner(email, password) ? previewAdminEmail() : null;
   }

@@ -2,6 +2,10 @@ export function isLocalPreview(env = process.env) {
   return !env.VERCEL && env.EDUCATION_UNITE_PREVIEW === '1' && !env.DATABASE_URL;
 }
 
+export function validAdminPassword(password) {
+  return password.length >= 12 && password.length <= 128;
+}
+
 export function validateHostedConfig(env = process.env) {
   if (!env.VERCEL) return;
   const disabled = ['EDUCATION_UNITE_PREVIEW', 'EDUCATION_UNITE_TEST_PASSWORD_ONLY', 'EDUCATION_UNITE_LOCAL_ADMIN_TEST_CODE'];
