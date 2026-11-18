@@ -75,8 +75,6 @@
 .admin-topbar button, .admin-drawer-content > button {
   width: 2.75rem;
   padding: 0;
-  background: var(--theme-surface);
-  color: var(--theme-text);
 }
 
 .admin-panel :is(a, button):focus-visible { outline: 2px solid var(--theme-primary); outline-offset: -2px; }

@@ -8,6 +8,8 @@ Use Node.js 24 and npm. On Windows, use Node.js 24.22.1 or a newer Node 24 relea
 
 Run `npm run build` followed by `npm test` for the regression checks. The tests apply the migrations to a disposable database, validate the 24-template bank and submit the forms served by the production build on loopback. GitHub Actions runs the same checks and an npm dependency audit on pushes and pull requests.
 
+The regression suite checks cross-student isolation with the runtime database role and separate app sessions. An Ubuntu GitHub Actions run can verify the full suite when the Windows preview runner hits a V8 memory error.
+
 To try student sign-up, sign-in and maths practice locally, run `npm run build` and then `npm run preview:student -- --port 3002`. Open [the local preview](http://127.0.0.1:3002) and enter class code `EU-PREVIEW`. Use a test password. After joining, select **Start maths practice**. The preview binds to loopback and uses an in-memory PostgreSQL database, so accounts and sessions reset when the server restarts.
 
 ## Update the practice workbook
@@ -32,6 +34,8 @@ The current Vercel deployment uses email verification codes. Configure the serve
 
 From `/login`, enter the admin email and password, select **Sign in**, and enter the six-digit code in the same browser. The old `/admin/login` address redirects to `/login`. Codes expire after five minutes and can be used once. The admin session lasts 15 minutes. Hosted admin sign-in requires email-code mode.
 
+Student and admin login share one IP limit. The class-code check has its own. Each limit allows ten failed attempts in 15 minutes. Successful attempts do not use the failure allowance.
+
 Generate a code at `/admin/codes`. It works in the student join screen for 168 hours. To reset a student password, use `/admin/password-reset` with the student's username and share the resulting one-time password privately. It expires after 15 minutes and immediately replaces any previous reset credential, disables the old password and revokes all of the student's existing sessions. The student can set a new password from the sign-in screen. If the credential expires, issue a fresh one. The reset flow purges expired reset records when students use the reset form.
 
-See [Phase 1 foundation](docs/PHASE-1-FOUNDATION.md) for the screen map and data rules.
+See the [handover guide](docs/HANDOVER.md) for the test accounts, production verification, owner transfer and services/data inventory. The [Phase 1 foundation](docs/PHASE-1-FOUNDATION.md) covers the screen map and data rules.

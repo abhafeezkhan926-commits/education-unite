@@ -49,10 +49,10 @@ export default function AdminNav({ children }) {
   return (
     <div className="admin-panel" data-expanded={expanded}>
       <header className="admin-topbar">
-        <button className="admin-desktop-toggle" type="button" aria-label="Toggle sidebar" aria-controls="admin-sidebar" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
+        <button className="admin-desktop-toggle secondary-button" type="button" aria-label="Toggle sidebar" aria-controls="admin-sidebar" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
           <Icon path="M3 5h18v14H3zM9 5v14" />
         </button>
-        <button className="admin-mobile-toggle" type="button" aria-label="Open sidebar" aria-controls="admin-drawer" aria-expanded={drawerOpen} onClick={() => { drawer.current.showModal(); setDrawerOpen(true); }}>
+        <button className="admin-mobile-toggle secondary-button" type="button" aria-label="Open sidebar" aria-controls="admin-drawer" aria-expanded={drawerOpen} onClick={() => { drawer.current.showModal(); setDrawerOpen(true); }}>
           <Icon path="M4 6h16M4 12h16M4 18h16" />
         </button>
         <Brand href="/admin" />
@@ -60,7 +60,7 @@ export default function AdminNav({ children }) {
       <aside id="admin-sidebar" className="admin-sidebar"><Navigation /></aside>
       <dialog id="admin-drawer" ref={drawer} className="admin-drawer" aria-label="Admin navigation" onClose={() => setDrawerOpen(false)} onClick={(event) => { if (event.target === event.currentTarget) closeDrawer(); }}>
         <div className="admin-drawer-content">
-          <button type="button" aria-label="Close sidebar" onClick={closeDrawer}><Icon path="m6 6 12 12M18 6 6 18" /></button>
+          <button className="secondary-button" type="button" aria-label="Close sidebar" onClick={closeDrawer}><Icon path="m6 6 12 12M18 6 6 18" /></button>
           <Navigation close={closeDrawer} />
         </div>
       </dialog>

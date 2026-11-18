@@ -44,11 +44,8 @@ export default function TypingText({ text, delay = 0, animate }) {
 
   return (
     <span className="practice-typing">
-      <span className="practice-typing-full">{text}</span>
-      <span className="practice-typing-preview" aria-hidden="true">
-        {characters.slice(0, length ?? size).join('')}
-        <span className="practice-typing-unrevealed">{characters.slice(length ?? size).join('')}</span>
-      </span>
+      {characters.slice(0, length ?? size).join('')}
+      <span className="practice-typing-unrevealed">{characters.slice(length ?? size).join('')}</span>
     </span>
   );
 }

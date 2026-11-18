@@ -25,7 +25,7 @@ export default async function Join() {
             <PasswordField label="Create a password" name="password" autoComplete="new-password" required minLength={12} maxLength={128} aria-describedby="password-help" />
             <small id="password-help">Use at least 12 characters.</small>
           </StudentForm>
-          <form action={restartJoin}><PracticeSubmitButton className="text-button">Use a different code</PracticeSubmitButton></form>
+          <form action={restartJoin}><PracticeSubmitButton className="secondary-button">Use a different code</PracticeSubmitButton></form>
         </>
       ) : (
         <StudentForm action={checkJoinCode} submit="Continue">

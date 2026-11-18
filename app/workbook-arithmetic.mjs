@@ -75,7 +75,9 @@ export function standardForm(value) {
 }
 
 export function parsePracticeAnswer(value, format) {
-  const compact = value.replace(/\s+/g, '');
+  const normalised = value.trim().replace(/^([+-]?)£\s*/, '$1')
+    .replace(/\d+(?:,\d{3})+(?!\d)/g, (number) => number.replaceAll(',', ''));
+  const compact = normalised.replace(/\s+/g, '');
   const decimal = /^[+-]?\d{1,12}(?:\.\d{1,6})?$/;
   if (format === 'fraction') {
     const fraction = /^([+-]?\d{1,9})\/(\d{1,9})$/.exec(compact);
@@ -85,7 +87,7 @@ export function parsePracticeAnswer(value, format) {
     const exponent = /^([+-]?\d{1,12}(?:\.\d{1,6})?)(?:e|[×x*]10\^)([+-]?\d{1,2})$/i.exec(compact);
     if (exponent) return Number(`${exponent[1]}e${exponent[2]}`);
   }
-  return decimal.test(value) ? Number(value) : null;
+  return decimal.test(normalised) ? Number(normalised) : null;
 }
 
 export function matchesAnswer(actual, expected) {

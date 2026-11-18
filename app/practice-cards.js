@@ -73,10 +73,10 @@ export default function PracticeCards() {
       <div className="feature-toolbar">
         <Link className="student-button" href="/join">Join with a code</Link>
         <div className="feature-controls" aria-label="Feature cards">
-          <button type="button" className="sign-in-button feature-arrow" aria-label="Previous feature" onClick={() => browse(-1)}>‹</button>
+          <button type="button" className="secondary-button feature-arrow" aria-label="Previous feature" onClick={() => browse(-1)}>‹</button>
           <span className="feature-position">{selection.index + 1} / {features.length}</span>
-          <button type="button" className="sign-in-button feature-arrow" aria-label="Next feature" onClick={() => browse(1)}>›</button>
-          <button type="button" className="sign-in-button feature-play" onClick={() => setPaused(!paused)}>{paused ? 'Play' : 'Pause'}</button>
+          <button type="button" className="secondary-button feature-arrow" aria-label="Next feature" onClick={() => browse(1)}>›</button>
+          <button type="button" className="secondary-button feature-play" onClick={() => setPaused(!paused)}>{paused ? 'Play' : 'Pause'}</button>
         </div>
       </div>
     </section>

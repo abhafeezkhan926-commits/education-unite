@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import StudentForm from '../student-forms';
 
+const expiryFormat = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
+});
+
 function Credential({ value, expiresAt, label }) {
   const [copied, setCopied] = useState(false);
 
@@ -18,8 +22,8 @@ function Credential({ value, expiresAt, label }) {
   return (
     <div>
       <p role="status">{label} <code>{value}</code></p>
-      <p>Expires <time dateTime={expiresAt}>{new Date(expiresAt).toLocaleString()}</time></p>
-      <button type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+      <p>Expires <time dateTime={expiresAt}>{expiryFormat.format(new Date(expiresAt))}</time></p>
+      <button className="secondary-button" type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
     </div>
   );
 }

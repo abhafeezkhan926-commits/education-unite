@@ -73,6 +73,15 @@ test('all 24 practice templates validate', async () => {
   assert.equal(parsePracticeAnswer('1.2 × 10^5', 'standard'), 120000);
   assert.equal(parsePracticeAnswer('1.2e5', 'standard'), 120000);
   assert.ok(!matchesAnswer(parsePracticeAnswer('1.01', 'decimal'), 1));
+  assert.equal(parsePracticeAnswer('£81', 'decimal'), 81);
+  assert.equal(parsePracticeAnswer(' £70,000.25 ', 'decimal'), 70000.25);
+  assert.equal(parsePracticeAnswer('70,00', 'decimal'), null);
+  assert.equal(parsePracticeAnswer('8£1', 'decimal'), null);
+  const discount = compileWorkbookTemplate(templates.find(({ id }) => id === 'SF1'));
+  assert.match(discount({ a: 90, b: 10 }).solution[1], /1 lot of 10%/);
+  assert.match(discount({ a: 90, b: 20 }).solution[1], /2 lots of 10%/);
+  const streams = compileWorkbookTemplate(templates.find(({ prompt }) => prompt.includes('pays an artist')));
+  assert.match(streams({ a: 4, b: 70000 }).prompt, /70,000 streams/);
 });
 
 test('database roles expose only the current student’s practice records', async (t) => {
@@ -85,6 +94,7 @@ test('database roles expose only the current student’s practice records', asyn
   const { rows: students } = await db.query(
     "insert into education_unite.students (username, password_hash) values ('first', 'fixture'), ('second', 'fixture') returning id",
   );
+  const records = [];
   for (const { id } of students) {
     const { rows: [practice] } = await db.query(
       'insert into education_unite.practice_sessions (student_id, duration_seconds) values ($1, 1) returning id',
@@ -94,18 +104,39 @@ test('database roles expose only the current student’s practice records', asyn
       "insert into education_unite.practice_answers values ($1, 1, '{}', $2)",
       [practice.id, id],
     );
+    const token = randomBytes(32).toString('hex');
+    await db.query('insert into education_unite.student_sessions values ($1, $2, now() + interval \'1 hour\')', [token, id]);
+    const { rows: [active] } = await db.query(
+      "insert into education_unite.active_practice values ($1, gen_random_uuid(), now() + interval '1 hour', '{}') returning id",
+      [token],
+    );
+    records.push({ id, token, activeId: active.id, practiceId: practice.id });
   }
-  for (const { id } of students) {
+  for (const { id, token, activeId } of records) {
+    const other = records.find((record) => record.id !== id);
+    const setStudent = async (tx) => {
+      await tx.query('set local role education_unite_app');
+      await tx.query("select set_config('education_unite.student_id', $1, true), set_config('education_unite.session_digest', $2, true)", [id, token]);
+    };
     await db.transaction(async (tx) => {
       await tx.query('set local role education_unite_app');
       const sessions = 'select student_id from education_unite.practice_sessions';
       const answers = 'select answer from education_unite.practice_answers';
+      const active = 'select id from education_unite.active_practice';
       assert.deepEqual((await tx.query(sessions)).rows, []);
       assert.deepEqual((await tx.query(answers)).rows, []);
-      await tx.query("select set_config('education_unite.student_id', $1, true)", [id]);
+      assert.deepEqual((await tx.query(active)).rows, []);
+      await setStudent(tx);
       assert.deepEqual((await tx.query(sessions)).rows, [{ student_id: id }]);
       assert.deepEqual((await tx.query(answers)).rows, [{ answer: id }]);
+      assert.deepEqual((await tx.query(active)).rows, [{ id: activeId }]);
+      const update = await tx.query("update education_unite.active_practice set state = '{\"changed\":true}' where id = $1", [other.activeId]);
+      assert.equal(update.affectedRows, 0);
     });
+    await assert.rejects(db.transaction(async (tx) => {
+      await setStudent(tx);
+      await tx.query("insert into education_unite.practice_answers values ($1, 2, '{}', 'fixture')", [other.practiceId]);
+    }), { code: '42501' });
   }
   for (const role of ['anon', 'authenticated']) {
     await assert.rejects(db.transaction(async (tx) => {
@@ -300,6 +331,8 @@ test('production preview supports owner, signup, practice, expiry and password r
   const codePage = await admin.submit('/admin/codes', 'Create class code');
   const code = codePage.match(/<code>(EU-[A-F0-9]+)<\/code>/)?.[1];
   assert.ok(code, 'Expected a generated class code');
+  assert.match(codePage, /<time\b[^>]*>\d{2}\/\d{2}\/\d{4}/);
+  assert.match(await admin.submit('/admin/password-reset', 'Issue one-time password', { username: 'missing' + randomBytes(6).toString('hex') }), /No student with that username/);
   assert.match(await first.submit('/join', 'Continue', { code: 'EU-EXPIRED' }), /invalid or expired/);
 
   async function join(student, exclude) {
@@ -313,6 +346,7 @@ test('production preview supports owner, signup, practice, expiry and password r
   }
   const username = await join(first);
   await join(second, username);
+  assert.match((await second.get('/practice')).html, /Pick your interests/);
 
   const interestsPage = await first.get('/interests');
   assert.match(interestsPage.html, /personalise your practice questions/);
@@ -346,9 +380,13 @@ test('production preview supports owner, signup, practice, expiry and password r
       ];
       const rule = rules.find(([pattern]) => pattern.test(prompt));
       assert.ok(rule, 'Expected an approved shopping template');
-      answer = String(Math.round(rule[1]() * 100) / 100);
+      answer = '£' + new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 }).format(rule[1]());
     }
-    assert.match(await first.submit('/practice', 'Check answer', { answer }), /Worked solution/);
+    const result = await first.submit('/practice', 'Check answer', { answer });
+    const worked = result.match(/<section class="worked-solution"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+    assert.ok(worked, 'Expected a worked solution');
+    assert.equal([...worked.matchAll(/Worked solution/g)].length, 1);
+    assert.equal([...worked.matchAll(/Your answer:/g)].length, 1);
     await first.submit('/practice', question < 6 ? 'Next question' : 'See my summary');
   }
   assert.match((await first.get('/practice/summary')).html.replaceAll('<!-- -->', ''), /<dt>Score<\/dt><dd>1 \/ 6<\/dd>/);

@@ -6,6 +6,14 @@ export const workbookInterests = [
   { id: 'music', label: 'Music and streaming' },
 ];
 
+const displayNumber = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 6 });
+const displayMoney = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 });
+
+export function singulariseSolution(line) {
+  return line.replace(/(?<![\d.,])\b1 (lots of|weeks\b)/g, (_, phrase) =>
+    phrase === 'lots of' ? '1 lot of' : '1 week');
+}
+
 export function parseRanges(text) {
   return Object.fromEntries(text.split(/\r?\n/).map((line) => {
     const [name, description] = line.split(': ');
@@ -37,7 +45,6 @@ export function compileWorkbookTemplate(template) {
   const { ranges, formula, format, places, prompt, hints, solution, use } = template;
   const variables = Object.keys(ranges);
   const calculate = compileArithmetic(formula, variables);
-  const formatNumber = (value, digits) => String(roundDecimal(value, digits));
   function compileText(source) {
     const substitutions = [...source.matchAll(/\{([^{}]+)\}/g)].map(([, expression]) => {
       if (expression === 'sf') return ({ answer }) => standardForm(answer);
@@ -45,7 +52,9 @@ export function compileWorkbookTemplate(template) {
       const [math, modifier] = expression.split(':');
       if (modifier && modifier !== 'm') throw new Error(`Unknown workbook format: ${expression}`);
       const evaluate = compileArithmetic(math, [...variables, 'answer']);
-      return (values) => formatNumber(evaluate(values), modifier === 'm' ? 2 : 6);
+      const formatter = modifier === 'm' ? displayMoney : displayNumber;
+      const digits = modifier === 'm' ? 2 : 6;
+      return (values) => formatter.format(roundDecimal(evaluate(values), digits));
     });
     return (values) => {
       let index = 0;
@@ -64,7 +73,7 @@ export function compileWorkbookTemplate(template) {
     return {
       prompt: renderPrompt(values),
       hints: renderHints.map((render) => render(values)),
-      solution: renderSolution.map((render) => render(values)),
+      solution: renderSolution.map((render) => singulariseSolution(render(values))),
       use: renderUse(values),
       unit: template.unit,
       format,
