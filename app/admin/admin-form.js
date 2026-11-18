@@ -20,10 +20,11 @@ function Credential({ value, expiresAt, label }) {
   }
 
   return (
-    <div>
+    <div className="admin-credential">
       <p role="status">{label} <code>{value}</code></p>
       <p>Expires <time dateTime={expiresAt}>{expiryFormat.format(new Date(expiresAt))}</time></p>
       <button className="secondary-button" type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+      <span className="visually-hidden" role="status">{copied ? 'Copied to clipboard' : ''}</span>
     </div>
   );
 }

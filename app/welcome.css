@@ -187,3 +187,19 @@
 @media (prefers-reduced-motion: reduce) {
   .feature-play { display: none; }
 }
+.welcome-steps { margin-block-start: 1.5rem; }
+
+.welcome-steps ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  list-style-position: inside;
+}
+
+.welcome-steps li {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-card-radius);
+  background: var(--theme-white);
+}

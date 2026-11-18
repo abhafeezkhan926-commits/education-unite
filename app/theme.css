@@ -1,0 +1,23 @@
+:root {
+  color-scheme: light;
+  --theme-white: #fff;
+  --theme-page: #fff7e8;
+  --theme-surface: #e8f3ee;
+  --theme-text: #163331;
+  --theme-muted: #36534e;
+  --theme-primary: #014d4e;
+  --theme-primary-hover: #013b3c;
+  --theme-border: #c5d8cf;
+  --theme-field-border: #688278;
+  --theme-accent: #fff1cf;
+  --theme-success: #1b6047;
+  --theme-error: #971d32;
+  --theme-error-surface: #fff0f2;
+  --theme-card-radius: 12px;
+  --theme-control-radius: 10px;
+  --theme-target: 44px;
+  --theme-body-size: 1rem;
+  --theme-question-size: 1.375rem;
+  --theme-heading-size: 2.25rem;
+  --theme-shadow: 0 8px 24px #214f4012;
+}
