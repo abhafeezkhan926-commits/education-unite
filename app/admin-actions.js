@@ -6,29 +6,26 @@ import { redirect } from 'next/navigation';
 import { AdminAuthUnavailable, endAdminSession, startAdminSession, usesAdminEmailCode, verifiedOwnerEmail, withAdmin } from './admin-auth';
 import { clearAdminEmailCode, consumeAdminEmailCode, pendingAdminEmailToken, sendAdminEmailCode } from './admin-email-code';
 import { studentTransaction } from './student-db';
-import { consumeAttempt, digest, requestSource } from './student-security';
+import { digest, loginNetworkAction, requestSource, withNetworkAttempts } from './student-security';
 
 export async function adminSignIn(_previous, form) {
   const email = String(form.get('email') ?? '').trim();
   const password = String(form.get('password') ?? '');
-  const source = requestSource(await headers());
-  if (!await studentTransaction((db) => consumeAttempt(db, 'admin_login', source, 10))) {
-    return { error: 'Too many attempts. Try again in 15 minutes.' };
-  }
+  const source = requestSource(await headers(), { requireTrusted: true });
+  if (!source) return { error: 'Sign-in is temporarily unavailable. Try again in a few minutes.' };
   try {
-    return await authenticateAdmin(email, password);
+    const result = await studentTransaction((db) => withNetworkAttempts(db, loginNetworkAction, source, async () => {
+      const validEmail = email && email.length <= 254;
+      const recipient = usesAdminEmailCode() && validEmail && await verifiedOwnerEmail(email, password);
+      return recipient ? { recipient } : { error: 'Username or password is incorrect.' };
+    }));
+    if (result.error) return result;
+    if (!await sendAdminEmailCode(result.recipient)) {
+      return { error: 'Could not send the sign-in code. Try again later.' };
+    }
   } catch (error) {
     if (error instanceof AdminAuthUnavailable) return { error: 'Sign-in is temporarily unavailable. Try again in a few minutes.' };
     throw error;
-  }
-}
-
-async function authenticateAdmin(email, password) {
-  const validFields = email && email.length <= 254 && password && password.length <= 128;
-  const recipient = usesAdminEmailCode() && validFields && await verifiedOwnerEmail(email, password);
-  if (!recipient) return { error: 'Username or password is incorrect.' };
-  if (!await sendAdminEmailCode(recipient)) {
-    return { error: 'Could not send the sign-in code. Try again later.' };
   }
   redirect('/login?step=email');
 }

@@ -12,7 +12,8 @@ import { PGlite } from '@electric-sql/pglite';
 import { compileWorkbookTemplate, workbookInterests } from '../app/workbook-templates.mjs';
 import { matchesAnswer, parsePracticeAnswer } from '../app/workbook-arithmetic.mjs';
 import { consumeEmailChallenge } from '../app/admin-email-challenge.mjs';
-import { isLocalPreview, validateHostedConfig } from '../app/runtime-config.mjs';
+import { isLocalPreview, validAdminPassword, validateHostedConfig } from '../app/runtime-config.mjs';
+import { loginNetworkAction, withNetworkAttempts } from '../app/student-security.js';
 import { verifyOwnerTotp } from '../app/admin-totp.mjs';
 
 const require = createRequire(import.meta.url);
@@ -25,6 +26,13 @@ test('Vercel rejects local login settings and incomplete configuration', () => {
     assert.equal(isLocalPreview(env), false);
   }
   assert.throws(() => validateHostedConfig({ VERCEL: '1' }), /Missing hosted configuration/);
+});
+
+test('admin passwords must be 12 to 128 characters', () => {
+  assert.equal(validAdminPassword('a'.repeat(11)), false);
+  assert.equal(validAdminPassword('a'.repeat(12)), true);
+  assert.equal(validAdminPassword('a'.repeat(128)), true);
+  assert.equal(validAdminPassword('a'.repeat(129)), false);
 });
 
 test('owner TOTP needs a verified factor and a valid second-factor token', async () => {
@@ -117,6 +125,36 @@ test('database roles expose only the current student’s practice records', asyn
   assert.equal(count, 1);
   assert.equal(await db.transaction((tx) => consumeEmailChallenge(tx, freshToken, candidate)), true);
   assert.equal(await db.transaction((tx) => consumeEmailChallenge(tx, freshToken, candidate)), false);
+});
+
+test('failed attempts are isolated by IP and expire after 15 minutes', async (t) => {
+  const previousSecret = process.env.EDUCATION_UNITE_SECRET;
+  process.env.EDUCATION_UNITE_SECRET = 'rate-limit-test-fixture-secret-32-bytes';
+  t.after(() => {
+    if (previousSecret === undefined) delete process.env.EDUCATION_UNITE_SECRET;
+    else process.env.EDUCATION_UNITE_SECRET = previousSecret;
+  });
+  const db = await PGlite.create();
+  t.after(() => db.close());
+  await db.exec('create role anon; create role authenticated');
+  for (const file of (await readdir(migrations)).filter((file) => file.endsWith('.sql')).sort()) {
+    await db.exec(await readFile(new URL(file, migrations), 'utf8'));
+  }
+  const failed = { error: 'invalid' };
+  const attempt = (source) => db.transaction(async (tx) => {
+    await tx.query('set local role education_unite_app');
+    return withNetworkAttempts(tx, loginNetworkAction, source, () => failed);
+  });
+  const firstIp = '192.0.2.10';
+  for (let index = 0; index < 10; index++) assert.deepEqual(await attempt(firstIp), failed);
+  assert.match((await attempt(firstIp)).error, /Too many attempts/);
+  const { rows: [window] } = await db.query(
+    'select extract(epoch from expires_at - now())::int as seconds from education_unite.rate_limit_windows',
+  );
+  assert.ok(window.seconds > 890 && window.seconds <= 900);
+  assert.deepEqual(await attempt('192.0.2.11'), failed);
+  await db.query("update education_unite.rate_limit_windows set expires_at = now() - interval '1 second'");
+  assert.deepEqual(await attempt(firstIp), failed);
 });
 
 async function startPreview(t, password, { emailCode = true } = {}) {
@@ -338,7 +376,7 @@ test('production preview supports owner, signup, practice, expiry and password r
 });
 
 test('owner email verification gates the admin dashboard and limits guesses', { timeout: 60_000 }, async (t) => {
-  const password = randomBytes(18).toString('base64url');
+  const password = randomBytes(9).toString('base64url');
   const origin = await startPreview(t, password);
   const owner = session(origin);
   assert.match(await owner.submit('/login', 'Sign in', { identifier: 'other@example.test', password }), /Username or password is incorrect/);
@@ -384,9 +422,18 @@ test('a full class can join and sign in from one network', { timeout: 120_000 },
     }));
   }
 
-  const failedJoin = session(origin);
-  for (let attempt = 0; attempt < 30; attempt++) {
-    assert.match(await failedJoin.submit('/join', 'Continue', { code: 'EU-EXPIRED' }), /invalid or expired/);
+  for (let attempt = 0; attempt < 15; attempt++) {
+    const identifier = attempt % 2 ? `wrong${attempt}@example.test` : `wrong${attempt}`;
+    const result = await session(origin).submit('/login', 'Sign in', { identifier, password });
+    assert.match(result, attempt < 10 ? /Username or password is incorrect/ : /Too many attempts/);
   }
-  assert.match(await failedJoin.submit('/join', 'Continue', { code: 'EU-EXPIRED' }), /Too many attempts/);
+  const [identifier] = usernames;
+  assert.match(await session(origin).submit('/login', 'Sign in', { identifier, password }), /Too many attempts/);
+  assert.match(await session(origin).submit('/join', 'Continue', { code: 'EU-PREVIEW' }), /Create account/);
+  const failedJoin = session(origin);
+  for (let attempt = 0; attempt < 37; attempt++) {
+    const result = await failedJoin.submit('/join', 'Continue', { code: 'EU-EXPIRED' });
+    assert.match(result, attempt < 10 ? /invalid or expired/ : /Too many attempts/);
+  }
+  assert.match(await failedJoin.submit('/join', 'Continue', { code: 'EU-PREVIEW' }), /Too many attempts/);
 });

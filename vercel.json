@@ -1,3 +1,1 @@
-{
-  "framework": "nextjs"
-}
+{"framework":"nextjs","git":{"deploymentEnabled":{"codex/part1-linux-verification":false}}}

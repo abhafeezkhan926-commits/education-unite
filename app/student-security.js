@@ -14,6 +14,8 @@ export const studentDeviceName = 'eu_student_device';
 export const studentDeviceAge = 30 * 24 * 60 * 60;
 export const sessionAge = 7 * 24 * 60 * 60;
 export const joinAge = 10 * 60;
+// Use one existing storage action for both branches of the shared login form.
+export const loginNetworkAction = 'admin_login';
 
 export function digest(purpose, value) {
   const key = preview ? previewKey : process.env.EDUCATION_UNITE_SECRET;
@@ -45,7 +47,10 @@ export function readStudentDevice(cookie, username, passwordHash) {
 export function requestSource(headers, { requireTrusted = false } = {}) {
   // Vercel sets this header at its edge. Other deployments share a fallback bucket.
   const address = process.env.VERCEL ? headers.get('x-vercel-forwarded-for')?.trim() : '';
-  if (isIP(address ?? '')) return address;
+  const version = isIP(address ?? '');
+  if (version === 4) return address;
+  const ipv6 = version === 6 && URL.parse('http://[' + address + ']');
+  if (ipv6) return ipv6.hostname;
   if (requireTrusted && (process.env.VERCEL || !preview)) return null;
   return 'local-or-unavailable';
 }
@@ -74,6 +79,19 @@ export async function consumeAttempt(db, action, bucket, limit) {
     [action, digest(action, bucket), limit],
   );
   return row.attempt_count <= limit;
+}
+
+export async function withNetworkAttempts(db, action, source, attempt) {
+  const bucket = 'ip-failures:' + source;
+  const limit = 10;
+  // Serialize the check and outcome for this IP, including concurrent requests.
+  await db.query('select pg_advisory_xact_lock(hashtextextended($1, 452018))', [digest(action, bucket)]);
+  if (await isRateLimited(db, action, bucket, limit)) {
+    return { error: 'Too many attempts. Try again in 15 minutes.' };
+  }
+  const result = await attempt();
+  if (result.error) await consumeAttempt(db, action, bucket, limit);
+  return result;
 }
 
 export function makeJoinTicket(codeDigest) {
