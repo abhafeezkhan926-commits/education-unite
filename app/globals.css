@@ -1,23 +1,11 @@
+@import './theme.css';
+
 @font-face {
   font-family: Nunito;
   src: url('./fonts/nunito-latin.woff2') format('woff2');
   font-style: normal;
   font-weight: 400 900;
   font-display: swap;
-}
-
-:root {
-  color-scheme: light;
-  --theme-white: #fff;
-  --theme-page: #fff7e8;
-  --theme-surface: #e8f3ee;
-  --theme-text: #163331;
-  --theme-muted: #36534e;
-  --theme-primary: #014d4e;
-  --theme-primary-hover: #013b3c;
-  --theme-border: #c5d8cf;
-  --theme-field-border: #688278;
-  --theme-shadow: 0 8px 24px #214f4012;
 }
 
 body {
@@ -28,6 +16,8 @@ body {
   color: var(--theme-text);
   background: var(--theme-page);
   font-family: Nunito, system-ui, sans-serif;
+  font-size: var(--theme-body-size);
+  line-height: 1.5;
 }
 
 main {
@@ -124,7 +114,7 @@ a {
   padding: clamp(1.25rem, 6vw, 2.5rem);
   margin-block: 1rem;
   border: 1px solid var(--theme-border);
-  border-radius: 1.25rem;
+  border-radius: var(--theme-card-radius);
   background: var(--theme-white);
   box-shadow: var(--theme-shadow);
   min-width: 0;
@@ -133,7 +123,7 @@ a {
 
 .student-card h1 {
   margin-block: 1rem;
-  font-size: clamp(1.8rem, 6vw, 2.65rem);
+  font-size: clamp(1.75rem, 6vw, var(--theme-heading-size));
   overflow-wrap: anywhere;
 }
 
@@ -154,8 +144,8 @@ a {
 
 input, select, button, .student-button {
   box-sizing: border-box;
-  min-height: 2.75rem;
-  border-radius: 0.6rem;
+  min-height: var(--theme-target);
+  border-radius: var(--theme-control-radius);
   font: inherit;
   padding: 0.55rem 0.8rem;
 }
@@ -232,9 +222,9 @@ button:disabled {
   margin: 0;
   padding: 0.65rem 0.8rem;
   border: 1px solid #f0b7be;
-  border-radius: 0.6rem;
-  background: #fff0f2;
-  color: #971d32;
+  border-radius: var(--theme-control-radius);
+  background: var(--theme-error-surface);
+  color: var(--theme-error);
   font-size: 1rem;
 }
 
@@ -268,10 +258,10 @@ button:disabled {
 .interest-options label {
   display: flex;
   align-items: center;
-  min-height: 2.75rem;
+  min-height: var(--theme-target);
   padding-inline: 0.75rem;
   border: 1px solid var(--theme-field-border);
-  border-radius: 0.6rem;
+  border-radius: var(--theme-control-radius);
   cursor: pointer;
 }
 
@@ -312,21 +302,78 @@ button:disabled {
   display: grid;
   gap: 0.75rem;
   padding: 1rem;
-  border-radius: 0.6rem;
+  border-radius: var(--theme-control-radius);
   background: var(--theme-surface);
 }
 
-.practice-summary div {
+.practice-progress {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.practice-progress progress {
+  width: 100%;
+  height: 0.625rem;
+  accent-color: var(--theme-primary);
+}
+
+.practice-interest {
+  justify-self: start;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--theme-control-radius);
+  background: var(--theme-surface);
+  font-weight: 700;
+}
+
+.practice-card .question-prompt {
+  font-size: var(--theme-question-size);
+  color: var(--theme-text);
+}
+
+.practice-hints li {
+  padding: 0.75rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-control-radius);
+  background: var(--theme-white);
+}
+
+.practice-feedback {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-block: 0.75rem;
-  border-bottom: 1px solid var(--theme-border);
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--theme-success);
+  font-weight: 800;
+}
+
+.practice-feedback[data-correct='false'] {
+  color: var(--theme-error);
+}
+
+.practice-use {
+  padding: 0.75rem;
+  border-radius: var(--theme-control-radius);
+  background: var(--theme-accent);
+}
+
+.practice-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.practice-summary div {
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--theme-border);
+  border-radius: var(--theme-card-radius);
+  background: var(--theme-surface);
+  text-align: center;
 }
 
 .practice-summary dd {
-  margin: 0;
-  font-weight: 700;
+  margin: 0.25rem 0 0;
+  color: var(--theme-primary);
+  font-size: 1.125rem;
+  font-weight: 800;
 }
 
 @media (max-width: 420px) {

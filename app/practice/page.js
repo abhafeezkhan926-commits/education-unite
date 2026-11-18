@@ -19,11 +19,16 @@ function WorkedSolution({ answer, question }) {
 
   return (
     <section className="worked-solution" aria-labelledby="solution">
-      <p>{line(feedback)}</p>
+      <p className="practice-feedback" data-correct={answer.correct}>
+        <span aria-hidden="true">{answer.correct ? '✓' : '×'}</span>
+        {line(feedback)}
+      </p>
       <h2 id="solution">{line('Worked solution')}</h2>
       <ol>{question.solution.map((step, index) => <li key={index}>{line(singulariseSolution(step))}</li>)}</ol>
-      <h3>{line('Where you will use this')}</h3>
-      <p>{line(question.use)}</p>
+      <div className="practice-use">
+        <h3>{line('Where you will use this')}</h3>
+        <p>{line(question.use)}</p>
+      </div>
     </section>
   );
 }
@@ -59,11 +64,15 @@ export default async function Practice({ searchParams }) {
       <StudentBackdrop />
       <main className="student-card practice-card">
         <noscript><style nonce={nonce}>{'.practice-typing-unrevealed { opacity: 1; }'}</style></noscript>
-        <p>Question {state.position + 1} of {state.questions.length} · {question.interest}</p>
+        <div className="practice-progress">
+          <p id="question-progress">Question {state.position + 1} of {state.questions.length}</p>
+          <progress aria-labelledby="question-progress" value={state.position + 1} max={state.questions.length} />
+        </div>
+        <p className="practice-interest">{question.interest}</p>
         <h1>Maths practice</h1>
         <p className="question-prompt">{question.prompt}</p>
         {state.hints > 0 && (
-          <section aria-label="Hints" key={`${practice.id}:${state.position}:hints`}>
+          <section className="practice-hints" aria-label="Hints" key={`${practice.id}:${state.position}:hints`}>
             <ol>
               {question.hints.slice(0, state.hints).map((hint, index) => (
                 <li key={index}><TypingText text={hint} animate={!answer && index === state.hints - 1} /></li>
