@@ -98,11 +98,13 @@ export default async function Practice({ searchParams }) {
               </PracticeForm>
             )}
             <PracticeForm practice={practice} operation="answer">
-              <label>Your answer ({question.unit})
-                <input name="answer" inputMode={question.format && question.format !== 'decimal' ? 'text' : 'decimal'}
-                  autoComplete="off" required maxLength={32} />
-              </label>
-              {invalidNumber && <p className="form-error" role="alert">{answerError}</p>}
+              <label htmlFor="practice-answer">Your answer</label>
+              <div className="answer-control">
+                <input id="practice-answer" name="answer" inputMode={question.format && question.format !== 'decimal' ? 'text' : 'decimal'}
+                  autoComplete="off" required maxLength={32} aria-describedby={invalidNumber ? 'answer-unit answer-error' : 'answer-unit'} />
+                <span id="answer-unit" data-prefix={question.unit === '£'}>{question.unit}</span>
+              </div>
+              {invalidNumber && <p id="answer-error" className="form-error" role="alert">{answerError}</p>}
               <PracticeSubmitButton pendingLabel="Checking answer…">Check answer</PracticeSubmitButton>
             </PracticeForm>
           </>

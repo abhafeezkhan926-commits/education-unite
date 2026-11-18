@@ -1,13 +1,5 @@
 @import './theme.css';
 
-@font-face {
-  font-family: Nunito;
-  src: url('./fonts/nunito-latin.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 400 900;
-  font-display: swap;
-}
-
 body {
   margin: 0;
   min-height: 100vh;
@@ -15,7 +7,7 @@ body {
   align-items: center;
   color: var(--theme-text);
   background: var(--theme-page);
-  font-family: Nunito, system-ui, sans-serif;
+  font-family: var(--font-nunito), system-ui, sans-serif;
   font-size: var(--theme-body-size);
   line-height: 1.5;
 }
@@ -473,11 +465,6 @@ body:has(.login-card) {
     var(--theme-page);
 }
 
-.login-card {
-  background: rgb(255 255 255 / 78%);
-  backdrop-filter: blur(14px);
-}
-
 .student-form label, .password-field {
   font-weight: 600;
 }
@@ -532,4 +519,58 @@ body:has(button[aria-busy='true']) * {
 }
 @media (prefers-reduced-motion: reduce) {
   .pending-spinner { animation: none; }
+}
+
+.interest-count {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.interest-options label { min-height: 3.5rem; }
+.interest-options input { margin-inline-start: auto; }
+
+input[autocomplete='one-time-code'] {
+  font-family: ui-monospace, monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.3em;
+}
+
+.answer-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.answer-control input {
+  flex: 1;
+  min-height: 3rem;
+  font-size: 1.125rem;
+  scroll-margin-block: 1rem;
+}
+
+.answer-control [data-prefix='true'] { order: -1; }
+
+.student-backdrop:has(.celebration-skip) { z-index: 2; }
+
+.celebration-skip {
+  position: absolute;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+  pointer-events: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .practice-hints li:last-child { animation: hint-enter 180ms ease-out both; }
+}
+
+@keyframes hint-enter {
+  from { opacity: 0; transform: translateY(0.375rem); }
 }

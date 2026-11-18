@@ -39,8 +39,11 @@ function Fireworks({ practiceId }) {
   if (!playing) return null;
   return (
     <div className="student-fireworks">
+      <button type="button" className="secondary-button celebration-skip" onClick={() => setPlaying(false)}>
+        Skip celebration
+      </button>
       {bursts.map(({ x, y, delay }) => (
-        <span className="student-firework" key={x} style={{ left: x, top: y, '--burst-delay': delay + 'ms' }}>
+        <span aria-hidden="true" className="student-firework" key={x} style={{ left: x, top: y, '--burst-delay': delay + 'ms' }}>
           {Array.from({ length: 12 }, (_, index) => (
             <i key={index} style={{
               '--angle': index * 30 + 'deg',
@@ -67,8 +70,8 @@ export default function StudentBackdrop({ celebrationId }) {
   }, []);
 
   return (
-    <div className="student-backdrop" aria-hidden="true">
-      <div className="student-numbers">
+    <div className="student-backdrop">
+      <div className="student-numbers" aria-hidden="true">
         {numbers.map(({ value, x, duration, phase }, index) => (
           <span key={index} style={{ left: x, animationDuration: duration + 's', animationDelay: -phase + 's' }}>{value}</span>
         ))}
