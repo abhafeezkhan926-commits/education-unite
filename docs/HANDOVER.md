@@ -12,7 +12,7 @@ Production is available at [education-unite-mvp.vercel.app](https://education-un
 ## Test accounts and owner transfer
 
 - Production handover uses real account workflows. Remove positively identified synthetic students and their linked data after verification; keep automated fixtures in the local/CI test environment. Give the client a fresh class code if they want to test sign-up.
-- The final admin email is pending the client's selection. Confirm the recipient and Resend sender, create or prepare the confirmed Supabase Auth account with a password of at least 12 characters, and configure the approved owner ID in Vercel. Coordinate the change with the client and confirm inbox receipt, code verification and dashboard access.
+- The final admin email has been supplied. Activation is pending a verified Resend sending domain and client inbox verification; the working owner remains active meanwhile. Create or prepare the confirmed Supabase Auth account with a password of at least 12 characters and configure the approved owner ID in Vercel when delivery is ready. Coordinate the change with the client and confirm inbox receipt, code verification and dashboard access.
 - After the replacement owner has signed in, revoke the previous admin account and any outstanding app admin sessions and email challenges. Have the replacement owner sign in again. Verify that the old account and any previous admin session are rejected.
 - Remove or rotate the synthetic test accounts after handover. Record results in the project status without credentials, authentication tokens or student data.
 
