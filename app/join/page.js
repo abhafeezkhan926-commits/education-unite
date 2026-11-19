@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { checkJoinCode, createStudent, restartJoin } from '../student-actions';
 import StudentForm from '../student-forms';
 import PasswordField from '../password-field';
+import GenderField from '../gender-field';
 import { joinName, readJoinTicket, usernameOptions } from '../student-security';
 
 export default async function Join() {
@@ -24,6 +25,7 @@ export default async function Join() {
             </label>
             <PasswordField label="Create a password" name="password" autoComplete="new-password" required minLength={12} maxLength={128} aria-describedby="password-help" />
             <small id="password-help">Use at least 12 characters.</small>
+            <GenderField />
           </StudentForm>
           <form action={restartJoin}><PracticeSubmitButton className="secondary-button">Use a different code</PracticeSubmitButton></form>
         </>

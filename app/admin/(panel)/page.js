@@ -11,6 +11,11 @@ export default async function Dashboard() {
       </section>
       <div className="admin-shortcuts">
         <section className="admin-surface">
+          <h2>Students</h2>
+          <p>Add students, search accounts and manage passwords.</p>
+          <Link href="/admin/students">Manage students <span aria-hidden="true">→</span></Link>
+        </section>
+        <section className="admin-surface">
           <h2>Class codes</h2>
           <p>Create a code students can use to join for the next seven days.</p>
           <Link href="/admin/codes">Generate class code <span aria-hidden="true">→</span></Link>

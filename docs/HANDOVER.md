@@ -11,10 +11,18 @@ Production is available at [education-unite-mvp.vercel.app](https://education-un
 
 ## Test accounts and owner transfer
 
-- Prepare three synthetic student accounts for the handover. Give each a separate password and share the credentials through the approved private channel. Use two to verify that each account sees its own practice. Use the third for password reset and session revocation checks. Give the client a fresh class code if they also want to test sign-up.
+- Production handover uses real account workflows. Remove positively identified synthetic students and their linked data after verification; keep automated fixtures in the local/CI test environment. Give the client a fresh class code if they want to test sign-up.
 - The final admin email is pending the client's selection. Confirm the recipient and Resend sender, create or prepare the confirmed Supabase Auth account with a password of at least 12 characters, and configure the approved owner ID in Vercel. Coordinate the change with the client and confirm inbox receipt, code verification and dashboard access.
 - After the replacement owner has signed in, revoke the previous admin account and any outstanding app admin sessions and email challenges. Have the replacement owner sign in again. Verify that the old account and any previous admin session are rejected.
 - Remove or rotate the synthetic test accounts after handover. Record results in the project status without credentials, authentication tokens or student data.
+
+## Student management
+
+The client can use **Students** to create accounts, search usernames, filter by optional gender and page through results. New admin-created accounts receive a system-generated username and a one-time password expiring in 15 minutes. Their first login requires setting their own password before any practice access. The credential appears in the creation/reset result and is not retrievable afterward; issue a fresh one if needed. Share it privately.
+
+Edit changes username and gender. A username change revokes existing student sessions. The key action replaces the password with a one-time credential and revokes all sessions. Delete requires exact username confirmation and cascades to sessions, resets and practice records. Existing class-code signup remains available and gender is optional for both signup and admin provisioning.
+
+Client owner activation depends on a verified Resend sender that can deliver to the client inbox. Keep the working owner active until delivery and the client's full sign-in are verified. A Resend test sender is not sufficient for a different recipient.
 
 ## Independent review
 
@@ -28,7 +36,7 @@ Give the reviewer the production link, Phase 1 scope and synthetic test access t
 
 | Service | Data processed | Region | Provider log retention |
 | --- | --- | --- | --- |
-| Supabase | Student usernames and password hashes, session token digests, practice answers and duration, temporary interests and hints, join-code digests, rate-limit buckets, reset digests, owner Auth and admin challenge digests | Sydney (`ap-southeast-2`) | Confirm the project plan, Logs Explorer retention and log drains with the account owner. [Supabase logs documentation](https://supabase.com/docs/guides/platform/manage-your-usage/logs) |
+| Supabase | Student usernames, password hashes, optional gender and account creation metadata, session token digests, practice answers and duration, temporary interests and hints, join-code digests, rate-limit buckets, reset digests, owner Auth and admin challenge digests | Sydney (`ap-southeast-2`), existing developer-owned project retained at the user's request | Confirm the project plan, Logs Explorer retention and log drains with the account owner. [Supabase logs documentation](https://supabase.com/docs/guides/platform/manage-your-usage/logs) |
 | Vercel | App requests, server-side secrets, access and build logs. The trusted request IP is used to derive a keyed rate-limit digest. | Production functions in Washington, D.C. (`iad1`). CDN edge locations vary by request. | Confirm the active plan and log drains. [Vercel runtime logs](https://vercel.com/docs/logs/runtime) |
 | GitHub | Source, CI logs, dependency audit and synthetic test fixtures | GitHub-hosted Ubuntu runner. Exact runner location is pending confirmation. | Confirm the repository's Actions retention setting. |
 | Resend | Sender and recipient addresses, the sign-in email body and delivery metadata | Account processing region pending confirmation. | Confirm retention and access with the account owner before the pilot. |

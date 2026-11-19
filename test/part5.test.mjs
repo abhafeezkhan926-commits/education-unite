@@ -248,7 +248,7 @@ function session(origin) {
       const name = pair.split('=')[0];
       assert.match(value, /; HttpOnly/i);
       assert.match(value, /; SameSite=Lax/i);
-      assert.match(name, /^eu_(join|student|student_device|admin|admin_session|admin_email)$/);
+      assert.match(name, /^eu_(join|student|student_device|admin|admin_session|admin_email|password_setup)$/);
       if (/; Max-Age=0(?:;|$)/i.test(value)) cookies.delete(name);
       else cookies.set(name, { pair, path: value.match(/; Path=([^;]+)/i)?.[1] ?? '/' });
     }
@@ -411,6 +411,62 @@ test('production preview supports owner, signup, practice, expiry and password r
   }
   assert.match(await anotherDevice.submit('/login', 'Sign in', { identifier: username, password: newPassword }), /Too many attempts/);
   assert.match(await first.submit('/login', 'Sign in', { identifier: username, password: newPassword }), /Start maths practice/);
+});
+
+test('student management supports filters, edits, one-time onboarding, resets and confirmed deletion', { timeout: 90_000 }, async (t) => {
+  const password = randomBytes(18).toString('base64url');
+  const origin = await startPreview(t, password);
+  const admin = session(origin);
+  const student = session(origin);
+  for (const route of ['/admin/students', '/admin/students/new', '/admin/students/00000000-0000-0000-0000-000000000000']) {
+    assert.match((await student.get(route)).html, /Username or email/);
+  }
+  await admin.submit('/login', 'Sign in', { identifier: 'owner@example.test', password });
+  await admin.submit('/login?step=email', 'Verify code', { code: '123456' });
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { gender: 'invalid' }), /valid gender option/);
+  const created = await admin.submit('/admin/students/new', 'Create student', { gender: 'female' });
+  const username = created.match(/Username <strong>([a-z0-9]+)<\/strong>/)?.[1];
+  const temporary = created.match(/<code>([\w-]{22})<\/code>/)?.[1];
+  assert.ok(username);
+  assert.ok(temporary);
+  const list = (await admin.get('/admin/students?q=' + username + '&gender=female')).html;
+  assert.match(list, new RegExp(username));
+  assert.match(list.replaceAll('<!-- -->', ''), /1 student found/);
+  const route = list.match(/href="(\/admin\/students\/[a-f0-9-]+)"/)?.[1];
+  assert.ok(route);
+  assert.match((await admin.get('/admin/students?q=' + username + '&gender=male')).html, /No students match/);
+  assert.match(await student.submit('/login', 'Sign in', { identifier: username, password: temporary }), /Choose your own password before starting practice/);
+  assert.match((await student.get('/student')).html, /Username or email/);
+  const nextPassword = randomBytes(18).toString('base64url');
+  assert.match(await student.submit('/login/reset', 'Set new password', { username, temporary, password: nextPassword }), /Password updated/);
+  assert.match(await student.submit('/login/reset', 'Set new password', { username, temporary, password: nextPassword }), /invalid or expired/);
+  assert.match(await student.submit('/login', 'Sign in', { identifier: username, password: nextPassword }), /Start maths practice/);
+  const renamed = 'updated' + randomBytes(6).toString('hex');
+  assert.match(await admin.submit(route, 'Save changes', { username: renamed, gender: 'male' }), /Student updated/);
+  assert.match((await student.get('/student')).html, /Username or email/);
+  assert.match((await admin.get('/admin/students?q=' + renamed + '&gender=male')).html, new RegExp(renamed));
+  const secondCreated = await admin.submit('/admin/students/new', 'Create student');
+  const secondName = secondCreated.match(/Username <strong>([a-z0-9]+)<\/strong>/)?.[1];
+  assert.match(await admin.submit(route, 'Save changes', { username: secondName }), /already in use/);
+  const reset = await admin.submit(route + '?action=password', 'Issue one-time password');
+  const resetPassword = reset.match(/<code>([\w-]{22})<\/code>/)?.[1];
+  assert.ok(resetPassword);
+  assert.match(await student.submit('/login', 'Sign in', { identifier: renamed, password: nextPassword }), /Username or password is incorrect/);
+  assert.match(await student.submit('/login', 'Sign in', { identifier: renamed, password: resetPassword }), /Choose your own password/);
+  const finalPassword = randomBytes(18).toString('base64url');
+  await student.submit('/login/reset', 'Set new password', { username: renamed, temporary: resetPassword, password: finalPassword });
+  await student.submit('/login', 'Sign in', { identifier: renamed, password: finalPassword });
+  assert.match(await admin.submit(route + '?action=delete', 'Delete student', { confirmation: 'wrong' }), /exact username/);
+  assert.match(await admin.submit(route + '?action=delete', 'Delete student', { confirmation: renamed }), /practice data deleted/);
+  assert.match((await student.get('/student')).html, /Username or email/);
+  assert.match((await admin.get('/admin/students?q=' + renamed)).html, /No students match/);
+  assert.match((await admin.get('/admin/students?gender=unspecified')).html, new RegExp(secondName));
+  // More than one page: filtering and navigation must retain a deterministic list.
+  for (let i = 0; i < 20; i++) await admin.submit('/admin/students/new', 'Create student');
+  const firstPage = (await admin.get('/admin/students?gender=unspecified')).html.replaceAll('<!-- -->', '');
+  assert.match(firstPage, /Page 1 of 2/);
+  assert.match(firstPage, /gender=unspecified[^"<]*page=2/);
+  assert.match((await admin.get('/admin/students?gender=unspecified&page=2')).html.replaceAll('<!-- -->', ''), /Page 2 of 2/);
 });
 
 test('owner email verification gates the admin dashboard and limits guesses', { timeout: 60_000 }, async (t) => {

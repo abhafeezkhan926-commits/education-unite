@@ -7,7 +7,7 @@ const expiryFormat = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
 });
 
-function Credential({ value, expiresAt, label }) {
+function Credential({ value, expiresAt, label, username }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -21,7 +21,9 @@ function Credential({ value, expiresAt, label }) {
 
   return (
     <div className="admin-credential">
+      {username && <p>Username <strong>{username}</strong></p>}
       <p role="status">{label} <code>{value}</code></p>
+      {username && <p>Share these privately. The student must set a new password before starting practice.</p>}
       <p>Expires <time dateTime={expiresAt}>{expiryFormat.format(new Date(expiresAt))}</time></p>
       <button className="secondary-button" type="button" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
       <span className="visually-hidden" role="status">{copied ? 'Copied to clipboard' : ''}</span>

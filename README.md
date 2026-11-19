@@ -38,4 +38,16 @@ Student and admin login share one IP limit. The class-code check has its own. Ea
 
 Generate a code at `/admin/codes`. It works in the student join screen for 168 hours. To reset a student password, use `/admin/password-reset` with the student's username and share the resulting one-time password privately. It expires after 15 minutes and immediately replaces any previous reset credential, disables the old password and revokes all of the student's existing sessions. The student can set a new password from the sign-in screen. If the credential expires, issue a fresh one. The reset flow purges expired reset records when students use the reset form.
 
-See the [handover guide](docs/HANDOVER.md) for the test accounts, production verification, owner transfer and services/data inventory. The [Phase 1 foundation](docs/PHASE-1-FOUNDATION.md) covers the screen map and data rules.
+## Manage students
+
+Open `/admin/students` to search by username, combine the search with an optional gender filter, and page through accounts (20 per page). Students can still join with a class code and sign in with their username and password. Gender is optional; existing accounts remain unspecified until edited.
+
+Select **Add student** to generate a unique username and one-time password. Copy the credential before leaving the result page and share it privately. It expires after 15 minutes. The student can enter it on the normal login screen, which takes them to mandatory password setup without creating a practice session. They must choose their own password before signing in. The same one-time password cannot be redeemed again. Use the key/password action to issue a replacement if it expires.
+
+Each student row has Edit, Password (key icon), and Delete actions. Renaming an account signs it out on every device; give the student their new username. Password reset immediately disables the old password and revokes sessions. Delete requires typing the exact username and permanently removes that account and its related practice data. These actions require an authenticated admin session on the server.
+
+Apply `20261119000006_student_management.sql` before deploying this version. It adds optional gender and creation metadata, narrowly scoped admin permissions, and a server-only one-time credential check. Do not enable local preview/test settings on a hosted deployment.
+
+For a client owner inbox, use a verified Resend sending domain. The `onboarding@resend.dev` test sender only delivers to the Resend account's own recipient and cannot complete handover to a different inbox. Verify code receipt and dashboard access before retiring the previous owner.
+
+See the [handover guide](docs/HANDOVER.md) for production verification, owner transfer and services/data inventory. The [Phase 1 foundation](docs/PHASE-1-FOUNDATION.md) covers the screen map and original data rules; the optional gender field was added with the student-management scope.

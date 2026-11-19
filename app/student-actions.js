@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { studentTransaction } from './student-db';
+import { readGender } from './student-profile.mjs';
 import {
   consumeAttempt, cookieOptions, digest, hashPassword, joinAge, joinName, makeJoinTicket,
   readJoinTicket, requestSource, sessionAge, sessionDigest, sessionName, usernameOptions, verifyPassword,
@@ -55,6 +56,8 @@ export async function createStudent(_previous, form) {
   const ticket = readJoinTicket((await cookies()).get(joinName)?.value);
   const username = String(form.get('username') ?? '');
   const password = String(form.get('password') ?? '');
+  const gender = readGender(form.get('gender'));
+  if (gender === undefined) return { error: 'Choose a valid gender option.' };
   if (!ticket) return { error: 'Your join request expired. Start again with your class code.' };
   if (!usernameOptions(ticket.nonce).includes(username)) return { error: 'Choose one of the suggested usernames.' };
   if (password.length < 12 || password.length > 128) return { error: 'Choose a password with 12 to 128 characters.' };
@@ -66,10 +69,10 @@ export async function createStudent(_previous, form) {
   const token = randomBytes(32).toString('base64url');
   const outcome = await studentTransaction(async (db) => {
     const { rows } = await db.query(
-      `insert into education_unite.students (username, password_hash)
-       select $2, $3 where exists (${codeQuery})
+      `insert into education_unite.students (username, password_hash, gender)
+       select $2, $3, $4 where exists (${codeQuery})
        on conflict (username) do nothing returning id`,
-      [ticket.codeDigest, username, passwordHash],
+      [ticket.codeDigest, username, passwordHash, gender],
     );
     if (!rows.length) {
       const code = await db.query(codeQuery, [ticket.codeDigest]);
@@ -98,6 +101,13 @@ export async function signIn(_previous, form) {
     const device = readStudentDevice(deviceCookie, username, student?.password_hash);
     const bucket = device ? `device:${username}:${device}` : 'account:' + username;
     if (!await consumeAttempt(db, 'student_login', bucket, 5)) return { error: slowDown };
+    if (student?.password_hash === 'reset-required' && /^[\w-]{22}$/.test(password)) {
+      const { rows: [{ valid }] } = await db.query(
+        'select education_unite.valid_student_reset($1, $2) as valid',
+        [username, digest('student-reset', password)],
+      );
+      if (valid) return { setup: { username, temporary: password } };
+    }
     if (!await verifyPassword(password, student?.password_hash)) return invalid;
     const token = randomBytes(32).toString('base64url');
     await issueSession(db, student.id, token);
@@ -108,6 +118,13 @@ export async function signIn(_previous, form) {
     return { token, remembered, device };
   }));
   if (result.error) return result;
+  if (result.setup) {
+    const oldToken = jar.get(sessionName)?.value;
+    if (oldToken) await revokeSession(oldToken);
+    jar.set(sessionName, '', cookieOptions(0));
+    jar.set('eu_password_setup', JSON.stringify(result.setup), { ...cookieOptions(300), path: '/login' });
+    redirect('/login/reset');
+  }
   if (result.remembered) jar.set(studentDeviceName, result.remembered, cookieOptions(studentDeviceAge));
   else if (result.device) jar.set(studentDeviceName, '', cookieOptions(0));
   await openStudentPage(result.token);
@@ -146,5 +163,6 @@ export async function resetPassword(_previous, form) {
     [username, digest('student-reset', temporary), passwordHash, digest('student_login', 'account:' + username)],
   ));
   if (!changed) return invalid;
+  (await cookies()).set('eu_password_setup', '', { ...cookieOptions(0), path: '/login' });
   redirect('/login?reset=complete');
 }
