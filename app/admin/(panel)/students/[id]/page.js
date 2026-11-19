@@ -4,6 +4,7 @@ import { withAdmin } from '../../../../admin-auth';
 import { validStudentId } from '../../../../student-profile.mjs';
 import GenderField from '../../../../gender-field';
 import StudentForm from '../../../../student-forms';
+import PasswordField from '../../../../password-field';
 import AdminForm from '../../../admin-form';
 import { editStudent, deleteStudent } from '../../../student-management-actions';
 import { issueStudentReset } from '../../../../admin-actions';
@@ -30,6 +31,7 @@ export default async function ManageStudent({ params, searchParams }) {
       <p>Issue a one-time password, valid for 15 minutes. Their old password and active sessions will stop working immediately.</p>
       <AdminForm action={issueStudentReset} submit="Issue one-time password" label="One-time password">
         <input type="hidden" name="username" value={student.username} />
+        <PasswordField label="One-time password" name="temporary" required minLength={12} maxLength={128} autoComplete="new-password" />
       </AdminForm>
     </> : <StudentForm action={editStudent} submit="Save changes">
       <input type="hidden" name="id" value={student.id} />

@@ -1,6 +1,7 @@
 import { issueStudentReset } from '../../../admin-actions';
 import { withAdmin } from '../../../admin-auth';
 import AdminForm from '../../admin-form';
+import PasswordField from '../../../password-field';
 
 export default async function AdminPasswordReset() {
   await withAdmin(() => {});
@@ -12,6 +13,7 @@ export default async function AdminPasswordReset() {
         <label>Student username
           <input name="username" required maxLength={64} autoCapitalize="none" spellCheck={false} />
         </label>
+        <PasswordField label="One-time password" name="temporary" required minLength={12} maxLength={128} autoComplete="new-password" />
       </AdminForm>
     </section>
   );

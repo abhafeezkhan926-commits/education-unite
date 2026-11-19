@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { withAdmin } from '../../../admin-auth';
 import GenderField from '../../../gender-field';
+import PracticeSubmitButton from '../../../practice/submit-button';
 import { genders, readGender } from '../../../student-profile.mjs';
 
 export default async function Students({ searchParams }) {
@@ -33,7 +34,7 @@ export default async function Students({ searchParams }) {
       <form className="student-filters" action="/admin/students" method="get">
         <label>Search username<input name="q" type="search" maxLength={64} defaultValue={query} placeholder="Search students…" /></label>
         <GenderField filter value={gender ?? ''} />
-        <button className="secondary-button" type="submit">Apply filters</button>
+        <PracticeSubmitButton className="secondary-button" pendingLabel="Filtering…">Apply filters</PracticeSubmitButton>
         <Link href="/admin/students">Clear filters</Link>
       </form>
       <p role="status">{total} {total === 1 ? 'student' : 'students'} found</p>

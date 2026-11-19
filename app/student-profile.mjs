@@ -1,6 +1,5 @@
 export const genders = [
-  ['female', 'Female'], ['male', 'Male'], ['nonbinary', 'Non-binary'],
-  ['prefer_not_to_say', 'Prefer not to say'],
+  ['male', 'Male'], ['female', 'Female'],
 ];
 
 export function readGender(value) {
@@ -10,6 +9,10 @@ export function readGender(value) {
 
 export function validUsername(value) {
   return /^[a-z0-9]{1,64}$/.test(value);
+}
+
+export function validTemporaryPassword(value) {
+  return typeof value === 'string' && value.length >= 12 && value.length <= 128;
 }
 
 export function validStudentId(value) {

@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { studentTransaction } from './student-db';
-import { readGender } from './student-profile.mjs';
+import { readGender, validTemporaryPassword } from './student-profile.mjs';
 import {
   consumeAttempt, cookieOptions, digest, hashPassword, joinAge, joinName, makeJoinTicket,
   readJoinTicket, requestSource, sessionAge, sessionDigest, sessionName, usernameOptions, verifyPassword,
@@ -101,7 +101,7 @@ export async function signIn(_previous, form) {
     const device = readStudentDevice(deviceCookie, username, student?.password_hash);
     const bucket = device ? `device:${username}:${device}` : 'account:' + username;
     if (!await consumeAttempt(db, 'student_login', bucket, 5)) return { error: slowDown };
-    if (student?.password_hash === 'reset-required' && /^[\w-]{22}$/.test(password)) {
+    if (student?.password_hash === 'reset-required' && validTemporaryPassword(password)) {
       const { rows: [{ valid }] } = await db.query(
         'select education_unite.valid_student_reset($1, $2) as valid',
         [username, digest('student-reset', password)],
@@ -146,14 +146,14 @@ export async function signOut() {
 
 export async function resetPassword(_previous, form) {
   const username = String(form.get('username') ?? '').trim().toLowerCase();
-  const temporary = String(form.get('temporary') ?? '').trim();
+  const temporary = String(form.get('temporary') ?? '');
   const password = String(form.get('password') ?? '');
   const source = requestSource(await headers());
   const allowed = await studentTransaction((db) => consumeAttempt(db, 'student_reset', source, 40));
   if (!allowed) return { error: slowDown };
   await studentTransaction((db) => db.query('select education_unite.clear_expired_resets()'));
   const invalid = { error: 'The username or one-time password is invalid or expired.' };
-  if (!/^[a-z0-9]{1,64}$/.test(username) || !/^[\w-]{22}$/.test(temporary)) return invalid;
+  if (!/^[a-z0-9]{1,64}$/.test(username) || !validTemporaryPassword(temporary)) return invalid;
   if (password.length < 12 || password.length > 128 || password === temporary) {
     return { error: 'Choose a different password with 12 to 128 characters.' };
   }

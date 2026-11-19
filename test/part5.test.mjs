@@ -332,7 +332,7 @@ test('production preview supports owner, signup, practice, expiry and password r
   const code = codePage.match(/<code>(EU-[A-F0-9]+)<\/code>/)?.[1];
   assert.ok(code, 'Expected a generated class code');
   assert.match(codePage, /<time\b[^>]*>\d{2}\/\d{2}\/\d{4}/);
-  assert.match(await admin.submit('/admin/password-reset', 'Issue one-time password', { username: 'missing' + randomBytes(6).toString('hex') }), /No student with that username/);
+  assert.match(await admin.submit('/admin/password-reset', 'Issue one-time password', { username: 'missing' + randomBytes(6).toString('hex'), temporary: password }), /No student with that username/);
   assert.match(await first.submit('/join', 'Continue', { code: 'EU-EXPIRED' }), /invalid or expired/);
 
   async function join(student, exclude) {
@@ -394,8 +394,8 @@ test('production preview supports owner, signup, practice, expiry and password r
 
   const anotherDevice = session(origin);
   assert.match(await anotherDevice.submit('/login', 'Sign in', { identifier: username, password }), /Start maths practice/);
-  const reset = await admin.submit('/admin/password-reset', 'Issue one-time password', { username });
-  const temporary = reset.match(/<code>([\w-]{22})<\/code>/)?.[1];
+  const reset = await admin.submit('/admin/password-reset', 'Issue one-time password', { username, temporary: password + '!' });
+  const temporary = reset.match(/<code>([^<]+)<\/code>/)?.[1];
   assert.ok(temporary, 'Expected a one-time password');
   assert.match((await first.get('/student')).html, /Username or email/);
   assert.match((await anotherDevice.get('/student')).html, /Username or email/);
@@ -424,11 +424,22 @@ test('student management supports filters, edits, one-time onboarding, resets an
   await admin.submit('/login', 'Sign in', { identifier: 'owner@example.test', password });
   await admin.submit('/login?step=email', 'Verify code', { code: '123456' });
   assert.match(await admin.submit('/admin/students/new', 'Create student', { gender: 'invalid' }), /valid gender option/);
-  const created = await admin.submit('/admin/students/new', 'Create student', { gender: 'female' });
+  const chosenName = 'manual' + randomBytes(6).toString('hex');
+  const chosenTemporary = ' Initial ' + randomBytes(12).toString('hex') + '! ';
+  const fields = { username: chosenName, temporary: chosenTemporary, gender: 'female' };
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, username: 'invalid-name' }), /letters or numbers/);
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, temporary: 'short' }), /12 to 128/);
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, gender: 'nonbinary' }), /valid gender option/);
+  const newForm = (await admin.get('/admin/students/new')).html;
+  assert.doesNotMatch(newForm, /Non-binary|Prefer not to say/);
+  const created = await admin.submit('/admin/students/new', 'Create student', fields);
   const username = created.match(/Username <strong>([a-z0-9]+)<\/strong>/)?.[1];
-  const temporary = created.match(/<code>([\w-]{22})<\/code>/)?.[1];
+  const temporary = created.match(/<code>([^<]+)<\/code>/)?.[1];
   assert.ok(username);
   assert.ok(temporary);
+  assert.equal(username, chosenName);
+  assert.equal(temporary, chosenTemporary);
+  assert.match(await admin.submit('/admin/students/new', 'Create student', fields), /already in use/);
   const list = (await admin.get('/admin/students?q=' + username + '&gender=female')).html;
   assert.match(list, new RegExp(username));
   assert.match(list.replaceAll('<!-- -->', ''), /1 student found/);
@@ -445,11 +456,11 @@ test('student management supports filters, edits, one-time onboarding, resets an
   assert.match(await admin.submit(route, 'Save changes', { username: renamed, gender: 'male' }), /Student updated/);
   assert.match((await student.get('/student')).html, /Username or email/);
   assert.match((await admin.get('/admin/students?q=' + renamed + '&gender=male')).html, new RegExp(renamed));
-  const secondCreated = await admin.submit('/admin/students/new', 'Create student');
+  const secondCreated = await admin.submit('/admin/students/new', 'Create student', { username: 'second' + randomBytes(6).toString('hex'), temporary: password });
   const secondName = secondCreated.match(/Username <strong>([a-z0-9]+)<\/strong>/)?.[1];
   assert.match(await admin.submit(route, 'Save changes', { username: secondName }), /already in use/);
-  const reset = await admin.submit(route + '?action=password', 'Issue one-time password');
-  const resetPassword = reset.match(/<code>([\w-]{22})<\/code>/)?.[1];
+  const reset = await admin.submit(route + '?action=password', 'Issue one-time password', { temporary: ' Reset ' + randomBytes(12).toString('hex') + '! ' });
+  const resetPassword = reset.match(/<code>([^<]+)<\/code>/)?.[1];
   assert.ok(resetPassword);
   assert.match(await student.submit('/login', 'Sign in', { identifier: renamed, password: nextPassword }), /Username or password is incorrect/);
   assert.match(await student.submit('/login', 'Sign in', { identifier: renamed, password: resetPassword }), /Choose your own password/);
@@ -462,7 +473,7 @@ test('student management supports filters, edits, one-time onboarding, resets an
   assert.match((await admin.get('/admin/students?q=' + renamed)).html, /No students match/);
   assert.match((await admin.get('/admin/students?gender=unspecified')).html, new RegExp(secondName));
   // More than one page: filtering and navigation must retain a deterministic list.
-  for (let i = 0; i < 20; i++) await admin.submit('/admin/students/new', 'Create student');
+  for (let i = 0; i < 20; i++) await admin.submit('/admin/students/new', 'Create student', { username: 'paged' + i, temporary: password });
   const firstPage = (await admin.get('/admin/students?gender=unspecified')).html.replaceAll('<!-- -->', '');
   assert.match(firstPage, /Page 1 of 2/);
   assert.match(firstPage, /gender=unspecified[^"<]*page=2/);

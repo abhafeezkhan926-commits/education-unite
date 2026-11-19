@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { AdminAuthUnavailable, endAdminSession, startAdminSession, usesAdminEmailCode, verifiedOwnerEmail, withAdmin } from './admin-auth';
 import { clearAdminEmailCode, consumeAdminEmailCode, pendingAdminEmailToken, sendAdminEmailCode } from './admin-email-code';
 import { studentTransaction } from './student-db';
+import { validTemporaryPassword } from './student-profile.mjs';
 import { digest, loginNetworkAction, requestSource, withNetworkAttempts } from './student-security';
 
 export async function adminSignIn(_previous, form) {
@@ -67,9 +68,10 @@ export async function createClassCode() {
 
 export async function issueStudentReset(_previous, form) {
   const username = String(form.get('username') ?? '').trim().toLowerCase();
+  const value = String(form.get('temporary') ?? '');
   const result = await withAdmin(async (db) => {
     if (!/^[a-z0-9]{1,64}$/.test(username)) return { error: 'Enter a student username.' };
-    const value = randomBytes(16).toString('base64url');
+    if (!validTemporaryPassword(value)) return { error: 'Choose a one-time password with 12 to 128 characters.' };
     const { rows: [{ deadline }] } = await db.query(
       'select education_unite.issue_student_reset($1, $2) as deadline',
       [username, digest('student-reset', value)],

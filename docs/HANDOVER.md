@@ -18,7 +18,7 @@ Production is available at [education-unite-mvp.vercel.app](https://education-un
 
 ## Student management
 
-The client can use **Students** to create accounts, search usernames, filter by optional gender and page through results. New admin-created accounts receive a system-generated username and a one-time password expiring in 15 minutes. Their first login requires setting their own password before any practice access. The credential appears in the creation/reset result and is not retrievable afterward; issue a fresh one if needed. Share it privately.
+The client can use **Students** to create accounts, search usernames, filter by optional gender and page through results. The admin enters the username and temporary password when creating a student, and enters a temporary password when resetting one. Usernames must be unique and use lowercase letters/numbers; temporary passwords use 12–128 characters and expire after 15 minutes. Their first login requires setting a different password before any practice access. Gender offers only Not specified, Male and Female. The credential appears in the creation/reset result and is not retrievable afterward; issue a fresh one if needed. Share it privately.
 
 Edit changes username and gender. A username change revokes existing student sessions. The key action replaces the password with a one-time credential and revokes all sessions. Delete requires exact username confirmation and cascades to sessions, resets and practice records. Existing class-code signup remains available and gender is optional for both signup and admin provisioning.
 
