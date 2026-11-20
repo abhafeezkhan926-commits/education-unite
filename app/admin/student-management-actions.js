@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { withAdmin } from '../admin-auth';
-import { digest } from '../student-security';
-import { readGender, validUsername, validStudentId, validTemporaryPassword } from '../student-profile.mjs';
+import { digest, isGeneratedUsername, readAdminUsernameTicket, usernameOptions } from '../student-security';
+import { validStudentId, validTemporaryPassword } from '../student-profile.mjs';
 
 function refresh() {
   revalidatePath('/admin/students');
@@ -13,15 +13,15 @@ function refresh() {
 export async function addStudent(_previous, form) {
   const username = String(form.get('username') ?? '').trim().toLowerCase();
   const value = String(form.get('temporary') ?? '');
-  const gender = readGender(form.get('gender'));
-  if (gender === undefined) return { error: 'Choose a valid gender option.' };
-  if (!validUsername(username)) return { error: 'Use a username with 1–64 letters or numbers.' };
+  const ticket = readAdminUsernameTicket(String(form.get('usernameTicket') ?? ''), 'new');
+  if (!ticket) return { error: 'Username suggestions expired. Refresh this page and try again.' };
+  if (!usernameOptions(ticket.nonce).includes(username)) return { error: 'Choose one of the generated usernames.' };
   if (!validTemporaryPassword(value)) return { error: 'Choose a one-time password with 12 to 128 characters.' };
   try {
     const result = await withAdmin(async (db) => {
       await db.query(
-        `insert into education_unite.students (username, password_hash, gender)
-         values ($1, 'reset-required', $2)`, [username, gender],
+        `insert into education_unite.students (username, password_hash)
+         values ($1, 'reset-required')`, [username],
       );
       const { rows: [{ deadline }] } = await db.query(
         'select education_unite.issue_student_reset($1, $2) as deadline',
@@ -40,18 +40,19 @@ export async function addStudent(_previous, form) {
 export async function editStudent(_previous, form) {
   const id = String(form.get('id') ?? '');
   const username = String(form.get('username') ?? '').trim().toLowerCase();
-  const gender = readGender(form.get('gender'));
-  if (!validStudentId(id) || !validUsername(username) || gender === undefined) {
-    return { error: 'Use a username with 1–64 letters or numbers and a valid gender option.' };
-  }
+  if (!validStudentId(id)) return { error: 'Select a valid student.' };
+  const ticket = readAdminUsernameTicket(String(form.get('usernameTicket') ?? ''), id);
+  if (!ticket) return { error: 'Username suggestions expired. Refresh this page and try again.' };
   try {
     const result = await withAdmin(async (db) => {
       const { rows: [student] } = await db.query('select username from education_unite.students where id = $1', [id]);
       if (!student) return { error: 'This student no longer exists. Refresh the list.' };
+      const keepingGenerated = username === student.username && isGeneratedUsername(username);
+      if (!keepingGenerated && !usernameOptions(ticket.nonce).includes(username)) return { error: 'Choose one of the generated usernames.' };
       await db.query('select education_unite.lock_student($1)', [student.username]);
       const { rows: [locked] } = await db.query('select username from education_unite.students where id = $1 for update', [id]);
       if (!locked || locked.username !== student.username) return { error: 'Student changed. Refresh and try again.' };
-      await db.query('update education_unite.students set username = $2, gender = $3 where id = $1', [id, username, gender]);
+      await db.query('update education_unite.students set username = $2 where id = $1', [id, username]);
       if (student.username !== username) await db.query('delete from education_unite.student_sessions where student_id = $1', [id]);
       return { success: 'Student updated.' };
     });

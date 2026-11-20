@@ -13,11 +13,37 @@ import { compileWorkbookTemplate, workbookInterests } from '../app/workbook-temp
 import { matchesAnswer, parsePracticeAnswer } from '../app/workbook-arithmetic.mjs';
 import { consumeEmailChallenge } from '../app/admin-email-challenge.mjs';
 import { isLocalPreview, validAdminPassword, validateHostedConfig } from '../app/runtime-config.mjs';
-import { loginNetworkAction, withNetworkAttempts } from '../app/student-security.js';
+import { loginNetworkAction, withNetworkAttempts, makeAdminUsernameTicket, readAdminUsernameTicket, isGeneratedUsername } from '../app/student-security.js';
 import { verifyOwnerTotp } from '../app/admin-totp.mjs';
 
 const require = createRequire(import.meta.url);
 const migrations = new URL('../supabase/migrations/', import.meta.url);
+
+function generatedUsernameForm(html) {
+  const ticket = html.match(/name="usernameTicket"[^>]*value="([^"]+)"/)?.[1];
+  const names = [...html.matchAll(/<option>([a-z0-9]+)<\/option>/g)].map(([, name]) => name);
+  assert.ok(ticket, 'Expected signed username suggestions');
+  assert.ok(names.length >= 3);
+  assert.ok(names.every(isGeneratedUsername));
+  return { ticket, names };
+}
+
+test('admin username suggestions are signed, scoped and expire', () => {
+  const previous = process.env.EDUCATION_UNITE_SECRET;
+  process.env.EDUCATION_UNITE_SECRET = randomBytes(32).toString('hex');
+  try {
+    const ticket = makeAdminUsernameTicket('new');
+    assert.ok(readAdminUsernameTicket(ticket, 'new'));
+    assert.equal(readAdminUsernameTicket(ticket, 'other-student'), null);
+    assert.equal(readAdminUsernameTicket(ticket, 'new', Date.now() + 11 * 60 * 1000), null);
+    assert.equal(readAdminUsernameTicket('0'.repeat(32) + ticket.slice(32), 'new'), null);
+    assert.equal(isGeneratedUsername('johnsmith'), false);
+    assert.equal(isGeneratedUsername('brightotter1234abcd'), true);
+  } finally {
+    if (previous === undefined) delete process.env.EDUCATION_UNITE_SECRET;
+    else process.env.EDUCATION_UNITE_SECRET = previous;
+  }
+});
 
 test('Vercel rejects local login settings and incomplete configuration', () => {
   for (const name of ['EDUCATION_UNITE_PREVIEW', 'EDUCATION_UNITE_TEST_PASSWORD_ONLY', 'EDUCATION_UNITE_LOCAL_ADMIN_TEST_CODE']) {
@@ -272,7 +298,7 @@ function session(origin) {
         const value = tag.match(/\bvalue="([^"]*)"/)?.[1];
         if (name) data.append(name, (value ?? '').replaceAll('&quot;', '"').replaceAll('&#x27;', "'").replaceAll('&amp;', '&'));
       }
-      for (const [name, value] of Object.entries(fields)) data.append(name, value);
+      for (const [name, value] of Object.entries(fields)) data.set(name, value);
       return (await request(path, data)).html;
     },
   };
@@ -423,15 +449,15 @@ test('student management supports filters, edits, one-time onboarding, resets an
   }
   await admin.submit('/login', 'Sign in', { identifier: 'owner@example.test', password });
   await admin.submit('/login?step=email', 'Verify code', { code: '123456' });
-  assert.match(await admin.submit('/admin/students/new', 'Create student', { gender: 'invalid' }), /valid gender option/);
-  const chosenName = 'manual' + randomBytes(6).toString('hex');
-  const chosenTemporary = ' Initial ' + randomBytes(12).toString('hex') + '! ';
-  const fields = { username: chosenName, temporary: chosenTemporary, gender: 'female' };
-  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, username: 'invalid-name' }), /letters or numbers/);
-  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, temporary: 'short' }), /12 to 128/);
-  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, gender: 'nonbinary' }), /valid gender option/);
   const newForm = (await admin.get('/admin/students/new')).html;
-  assert.doesNotMatch(newForm, /Non-binary|Prefer not to say/);
+  assert.doesNotMatch(newForm, /name="gender"|type="text" name="username"/);
+  const suggestions = generatedUsernameForm(newForm);
+  const chosenName = suggestions.names[0];
+  const chosenTemporary = ' Initial ' + randomBytes(12).toString('hex') + '! ';
+  const fields = { username: chosenName, usernameTicket: suggestions.ticket, temporary: chosenTemporary };
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, username: 'johnsmith' }), /generated usernames/);
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, temporary: 'short' }), /12 to 128/);
+  assert.match(await admin.submit('/admin/students/new', 'Create student', { ...fields, usernameTicket: 'forged' }), /suggestions expired/);
   const created = await admin.submit('/admin/students/new', 'Create student', fields);
   const username = created.match(/Username <strong>([a-z0-9]+)<\/strong>/)?.[1];
   const temporary = created.match(/<code>([^<]+)<\/code>/)?.[1];
@@ -440,25 +466,29 @@ test('student management supports filters, edits, one-time onboarding, resets an
   assert.equal(username, chosenName);
   assert.equal(temporary, chosenTemporary);
   assert.match(await admin.submit('/admin/students/new', 'Create student', fields), /already in use/);
-  const list = (await admin.get('/admin/students?q=' + username + '&gender=female')).html;
+  const list = (await admin.get('/admin/students?q=' + username)).html;
+  assert.doesNotMatch(list, /name="gender"|Not specified|Female|Male/);
   assert.match(list, new RegExp(username));
   assert.match(list.replaceAll('<!-- -->', ''), /1 student found/);
   const route = list.match(/href="(\/admin\/students\/[a-f0-9-]+)"/)?.[1];
   assert.ok(route);
-  assert.match((await admin.get('/admin/students?q=' + username + '&gender=male')).html, /No students match/);
+  assert.match((await admin.get('/admin/students?q=nomatchingstudent')).html, /No students match/);
   assert.match(await student.submit('/login', 'Sign in', { identifier: username, password: temporary }), /Choose your own password before starting practice/);
   assert.match((await student.get('/student')).html, /Username or email/);
   const nextPassword = randomBytes(18).toString('base64url');
   assert.match(await student.submit('/login/reset', 'Set new password', { username, temporary, password: nextPassword }), /Password updated/);
   assert.match(await student.submit('/login/reset', 'Set new password', { username, temporary, password: nextPassword }), /invalid or expired/);
   assert.match(await student.submit('/login', 'Sign in', { identifier: username, password: nextPassword }), /Start maths practice/);
-  const renamed = 'updated' + randomBytes(6).toString('hex');
-  assert.match(await admin.submit(route, 'Save changes', { username: renamed, gender: 'male' }), /Student updated/);
+  const editOptions = generatedUsernameForm((await admin.get(route)).html);
+  const renamed = editOptions.names.find((name) => name !== username);
+  assert.match(await admin.submit(route, 'Save changes', { username: 'johnsmith', usernameTicket: editOptions.ticket }), /generated usernames/);
+  assert.match(await admin.submit(route, 'Save changes', { username: renamed, usernameTicket: editOptions.ticket }), /Student updated/);
   assert.match((await student.get('/student')).html, /Username or email/);
-  assert.match((await admin.get('/admin/students?q=' + renamed + '&gender=male')).html, new RegExp(renamed));
-  const secondCreated = await admin.submit('/admin/students/new', 'Create student', { username: 'second' + randomBytes(6).toString('hex'), temporary: password });
+  assert.match((await admin.get('/admin/students?q=' + renamed)).html, new RegExp(renamed));
+  const secondOptions = generatedUsernameForm((await admin.get('/admin/students/new')).html);
+  const secondCreated = await admin.submit('/admin/students/new', 'Create student', { username: secondOptions.names[0], usernameTicket: secondOptions.ticket, temporary: password });
   const secondName = secondCreated.match(/Username <strong>([a-z0-9]+)<\/strong>/)?.[1];
-  assert.match(await admin.submit(route, 'Save changes', { username: secondName }), /already in use/);
+  assert.match(await admin.submit(route, 'Save changes', { username: renamed, usernameTicket: secondOptions.ticket }), /suggestions expired/);
   const reset = await admin.submit(route + '?action=password', 'Issue one-time password', { temporary: ' Reset ' + randomBytes(12).toString('hex') + '! ' });
   const resetPassword = reset.match(/<code>([^<]+)<\/code>/)?.[1];
   assert.ok(resetPassword);
@@ -471,13 +501,16 @@ test('student management supports filters, edits, one-time onboarding, resets an
   assert.match(await admin.submit(route + '?action=delete', 'Delete student', { confirmation: renamed }), /practice data deleted/);
   assert.match((await student.get('/student')).html, /Username or email/);
   assert.match((await admin.get('/admin/students?q=' + renamed)).html, /No students match/);
-  assert.match((await admin.get('/admin/students?gender=unspecified')).html, new RegExp(secondName));
+  assert.match((await admin.get('/admin/students')).html, new RegExp(secondName));
   // More than one page: filtering and navigation must retain a deterministic list.
-  for (let i = 0; i < 20; i++) await admin.submit('/admin/students/new', 'Create student', { username: 'paged' + i, temporary: password });
-  const firstPage = (await admin.get('/admin/students?gender=unspecified')).html.replaceAll('<!-- -->', '');
+  for (let i = 0; i < 20; i++) {
+    const options = generatedUsernameForm((await admin.get('/admin/students/new')).html);
+    await admin.submit('/admin/students/new', 'Create student', { username: options.names[0], usernameTicket: options.ticket, temporary: password });
+  }
+  const firstPage = (await admin.get('/admin/students')).html.replaceAll('<!-- -->', '');
   assert.match(firstPage, /Page 1 of 2/);
-  assert.match(firstPage, /gender=unspecified[^"<]*page=2/);
-  assert.match((await admin.get('/admin/students?gender=unspecified&page=2')).html.replaceAll('<!-- -->', ''), /Page 2 of 2/);
+  assert.match(firstPage, /page=2/);
+  assert.match((await admin.get('/admin/students?page=2')).html.replaceAll('<!-- -->', ''), /Page 2 of 2/);
 });
 
 test('owner email verification gates the admin dashboard and limits guesses', { timeout: 60_000 }, async (t) => {

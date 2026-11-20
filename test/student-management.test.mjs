@@ -12,17 +12,20 @@ test('student management roles protect credentials, expire resets and cascade de
     if (file === '20261119000007_gender_options.sql') {
       await db.query("insert into education_unite.students (username, password_hash, gender) values ('legacygender', 'fixture', 'nonbinary')");
     }
+    if (file === '20261119000008_remove_student_gender.sql') {
+      assert.equal((await db.query("select gender from education_unite.students where username = 'legacygender'")).rows[0].gender, null);
+    }
     await db.exec(await readFile(new URL(file, dir), 'utf8'));
   }
-  assert.equal((await db.query("select gender from education_unite.students where username = 'legacygender'")).rows[0].gender, null);
+  assert.equal((await db.query("select count(*)::int as count from information_schema.columns where table_schema='education_unite' and table_name='students' and column_name='gender'")).rows[0].count, 0);
   await db.query("delete from education_unite.students where username = 'legacygender'");
   const admin = (work) => db.transaction(async (tx) => { await tx.query('set local role education_unite_admin'); return work(tx); });
   const student = (work) => db.transaction(async (tx) => { await tx.query('set local role education_unite_app'); return work(tx); });
-  await admin((tx) => tx.query("insert into education_unite.students (username, password_hash, gender) values ('managed', 'reset-required', 'female')"));
-  await assert.rejects(admin((tx) => tx.query("insert into education_unite.students (username, password_hash, gender) values ('invalidgender', 'fixture', 'nonbinary')")), /check constraint/);
-  assert.deepEqual((await admin((tx) => tx.query('select username, gender from education_unite.students'))).rows, [{ username: 'managed', gender: 'female' }]);
+  await admin((tx) => tx.query("insert into education_unite.students (username, password_hash) values ('managed', 'reset-required')"));
+  await assert.rejects(admin((tx) => tx.query('select gender from education_unite.students')), /does not exist/);
+  assert.deepEqual((await admin((tx) => tx.query('select username from education_unite.students'))).rows, [{ username: 'managed' }]);
   await assert.rejects(admin((tx) => tx.query('select password_hash from education_unite.students')), /permission denied/);
-  await assert.rejects(student((tx) => tx.query("update education_unite.students set gender = 'male'")), /permission denied/);
+  await assert.rejects(student((tx) => tx.query("update education_unite.students set username = 'changed'")), /permission denied/);
   await assert.rejects(student((tx) => tx.query('delete from education_unite.students')), /permission denied/);
   await db.exec('set role anon');
   await assert.rejects(db.query('select * from education_unite.students'), /permission denied/);

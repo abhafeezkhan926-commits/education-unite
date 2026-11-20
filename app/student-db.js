@@ -24,6 +24,7 @@ async function createDatabase() {
     '20261116000005_expired_records.sql',
     '20261119000006_student_management.sql',
     '20261119000007_gender_options.sql',
+    '20261119000008_remove_student_gender.sql',
   ]) {
     await db.exec(await readFile(join(process.cwd(), 'supabase', 'migrations', migration), 'utf8'));
   }

@@ -2,7 +2,7 @@ import Link from '../../../navigation-link';
 import { notFound } from 'next/navigation';
 import { withAdmin } from '../../../../admin-auth';
 import { validStudentId } from '../../../../student-profile.mjs';
-import GenderField from '../../../../gender-field';
+import GeneratedUsernameField from '../../../username-field';
 import StudentForm from '../../../../student-forms';
 import PasswordField from '../../../../password-field';
 import AdminForm from '../../../admin-form';
@@ -14,7 +14,7 @@ export default async function ManageStudent({ params, searchParams }) {
   const { action } = await searchParams;
   const student = await withAdmin(async (db) => {
     if (!validStudentId(id)) return null;
-    return (await db.query('select id, username, gender from education_unite.students where id = $1', [id])).rows[0];
+    return (await db.query('select id, username from education_unite.students where id = $1', [id])).rows[0];
   });
   if (!student) notFound();
   return <section className="admin-surface">
@@ -35,9 +35,8 @@ export default async function ManageStudent({ params, searchParams }) {
       </AdminForm>
     </> : <StudentForm action={editStudent} submit="Save changes">
       <input type="hidden" name="id" value={student.id} />
-      <label>Username<input name="username" required pattern="[a-z0-9]{1,64}" maxLength={64} defaultValue={student.username} autoCapitalize="none" spellCheck={false} /></label>
-      <small>Use lowercase letters and numbers. Changing the username signs the student out.</small>
-      <GenderField value={student.gender} />
+      <GeneratedUsernameField scope={student.id} currentUsername={student.username} />
+      <small>Changing the username signs the student out on every device.</small>
     </StudentForm>}
   </section>;
 }

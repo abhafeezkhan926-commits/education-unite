@@ -115,6 +115,24 @@ export function usernameOptions(nonce) {
   });
 }
 
+export function isGeneratedUsername(username) {
+  const pattern = '^(?:' + adjectives.join('|') + ')(?:' + animals.join('|') + ')[a-f0-9]{8}$';
+  return typeof username === 'string' && new RegExp(pattern, 'i').test(username);
+}
+
+export function makeAdminUsernameTicket(scope, now = Date.now()) {
+  const value = randomBytes(16).toString('hex') + '.' + (now + joinAge * 1000);
+  return value + '.' + digest('admin-usernames', scope + ':' + value);
+}
+
+export function readAdminUsernameTicket(ticket, scope, now = Date.now()) {
+  if (!ticket || !/^[a-f0-9]{32}\.\d{13}\.[a-f0-9]{64}$/.test(ticket)) return null;
+  const [nonce, expiry, signature] = ticket.split('.');
+  const expected = digest('admin-usernames', scope + ':' + nonce + '.' + expiry);
+  if (Number(expiry) <= now || !timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))) return null;
+  return { nonce };
+}
+
 async function passwordKey(password, salt) {
   return derive('argon2id', {
     message: password, nonce: salt, parallelism: 1, tagLength: 32, memory: 19456, passes: 2,

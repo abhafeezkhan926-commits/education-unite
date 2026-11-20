@@ -1,12 +1,3 @@
-export const genders = [
-  ['male', 'Male'], ['female', 'Female'],
-];
-
-export function readGender(value) {
-  const gender = String(value ?? '');
-  return gender === '' ? null : genders.some(([key]) => key === gender) ? gender : undefined;
-}
-
 export function validUsername(value) {
   return /^[a-z0-9]{1,64}$/.test(value);
 }

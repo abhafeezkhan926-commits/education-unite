@@ -1,27 +1,23 @@
 import Link from '../../navigation-link';
 import { withAdmin } from '../../../admin-auth';
-import GenderField from '../../../gender-field';
 import PracticeSubmitButton from '../../../practice/submit-button';
-import { genders, readGender } from '../../../student-profile.mjs';
 
 export default async function Students({ searchParams }) {
   const params = await searchParams;
   const query = String(params.q ?? '').trim().toLowerCase().slice(0, 64);
-  const gender = params.gender === 'unspecified' ? 'unspecified' : readGender(params.gender);
   const requested = Number(params.page);
   const requestedPage = Number.isSafeInteger(requested) && requested > 0 ? Math.min(requested, 1000000) : 1;
   const { students, total, page } = await withAdmin(async (db) => {
-    const values = [query, gender ?? null];
-    const where = `where ($1 = '' or position($1 in username) > 0)
-      and ($2::text is null or gender = $2 or ($2 = 'unspecified' and gender is null))`;
+    const values = [query];
+    const where = `where ($1 = '' or position($1 in username) > 0)`;
     const { rows: [{ count }] } = await db.query(`select count(*)::int as count from education_unite.students ${where}`, values);
     const page = Math.min(requestedPage, Math.max(1, Math.ceil(count / 20)));
-    const { rows } = await db.query(`select id, username, gender, created_at from education_unite.students ${where}
-      order by username, id limit 20 offset $3`, [...values, (page - 1) * 20]);
+    const { rows } = await db.query(`select id, username from education_unite.students ${where}
+      order by username, id limit 20 offset $2`, [...values, (page - 1) * 20]);
     return { students: rows, total: count, page };
   });
   function pageUrl(value) {
-    return '/admin/students?' + new URLSearchParams({ q: query, gender: gender ?? '', page: String(value) });
+    return '/admin/students?' + new URLSearchParams({ q: query, page: String(value) });
   }
   const message = { updated: 'Student updated.', deleted: 'Student and their practice data deleted.' }[params.status];
   return <>
@@ -33,14 +29,13 @@ export default async function Students({ searchParams }) {
       {message && <p role="status">{message}</p>}
       <form className="student-filters" action="/admin/students" method="get">
         <label>Search username<input name="q" type="search" maxLength={64} defaultValue={query} placeholder="Search students…" /></label>
-        <GenderField filter value={gender ?? ''} />
         <PracticeSubmitButton className="secondary-button" pendingLabel="Filtering…">Apply filters</PracticeSubmitButton>
         <Link href="/admin/students">Clear filters</Link>
       </form>
       <p role="status">{total} {total === 1 ? 'student' : 'students'} found</p>
       {students.length ? <ul className="students-list">
         {students.map((student) => <li key={student.id}>
-          <div><strong>{student.username}</strong><span>{genders.find(([key]) => key === student.gender)?.[1] ?? 'Not specified'}</span></div>
+          <div><strong>{student.username}</strong></div>
           <div className="student-row-actions">
             <Link className="secondary-button" href={'/admin/students/' + student.id} aria-label={'Edit ' + student.username}>Edit</Link>
             <Link className="secondary-button" href={'/admin/students/' + student.id + '?action=password'} aria-label={'Reset password for ' + student.username}>
