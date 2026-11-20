@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../navigation-link';
 import { notFound } from 'next/navigation';
 import { withAdmin } from '../../../../admin-auth';
 import { validStudentId } from '../../../../student-profile.mjs';

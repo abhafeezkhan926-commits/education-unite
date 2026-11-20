@@ -502,7 +502,9 @@ button[aria-busy='true'] {
   gap: 0.55rem;
 }
 body:has(button[aria-busy='true']),
-body:has(button[aria-busy='true']) * {
+body:has(button[aria-busy='true']) *,
+body:has([data-admin-navigation-pending='true']),
+body:has([data-admin-navigation-pending='true']) * {
   cursor: progress;
 }
 .pending-spinner {

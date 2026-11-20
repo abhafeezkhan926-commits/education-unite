@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from './navigation-link';
 import Brand from '../brand';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';

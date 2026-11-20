@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../../navigation-link';
 import { withAdmin } from '../../../../admin-auth';
 import AdminForm from '../../../admin-form';
 import { addStudent } from '../../../student-management-actions';

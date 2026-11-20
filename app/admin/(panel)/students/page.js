@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '../../navigation-link';
 import { withAdmin } from '../../../admin-auth';
 import GenderField from '../../../gender-field';
 import PracticeSubmitButton from '../../../practice/submit-button';
